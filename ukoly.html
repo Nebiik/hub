@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Úkoly</title><link rel="stylesheet" href="style.css"></head>
+<body><div class="wrap" style="max-width:640px">
+<header><a href="index.html">‹ HUB</a><h1>Úkoly</h1></header><div id="msg"></div>
+<div class="card"><div id="list"></div>
+<form id="f"><input id="title" placeholder="Nový úkol" required maxlength="100"><div class="row"><input id="due" type="date"><button class="add" type="submit">Přidat úkol</button></div></form></div>
+</div>
+<script type="module">
+import{sync,put,del,ymd}from"./common.js";
+const $=i=>document.getElementById(i);
+let K=[];
+const mk=(t,c,x)=>{const n=document.createElement(t);n.className=c;if(x!=null)n.textContent=x;return n};
+function render(){const l=$("list");l.innerHTML="";const td=ymd(new Date());
+K.sort((a,b)=>(a.done-b.done)||((a.due||"9")<(b.due||"9")?-1:1));
+if(!K.length){l.innerHTML='<div class="empty">Žádné úkoly.</div>';return}
+K.forEach(t=>{const d=mk("div","ev"),c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.onchange=()=>put("tasks",{...t,done:c.checked});
+const s=mk("span","",t.title);s.style.flex=1;if(t.done){s.style.textDecoration="line-through";s.style.opacity=.5}
+d.append(c,s);
+if(t.due){const w=mk("span","empty",new Date(t.due+"T12:00:00").toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"}));if(!t.done&&t.due<td)w.style.color="var(--red)";d.append(w)}
+const x=mk("button","x","×");x.title="Smazat";x.onclick=()=>del("tasks",t.id);d.append(x);l.append(d)})}
+$("f").onsubmit=e=>{e.preventDefault();const t=$("title").value.trim();if(!t)return;
+put("tasks",{id:Date.now()+""+Math.floor(Math.random()*1000),title:t,due:$("due").value,done:false});$("f").reset()};
+render();
+sync("tasks",d=>{K=d.map(t=>({id:t.id,title:String(t.title||""),due:/^\d{4}-\d\d-\d\d$/.test(t.due)?t.due:"",done:t.done===true}));render()});
+</script></body></html>

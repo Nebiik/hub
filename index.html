@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HUB"><title>HUB</title><link rel="stylesheet" href="style.css">
+<style>.t{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.t a,.t div{display:block;text-decoration:none;color:var(--tx);background:var(--card);border:1px solid var(--br);border-radius:14px;padding:20px 14px;text-align:center;font-size:17px;font-weight:600}.t span{display:block;font-size:30px;margin-bottom:6px}.t .s{opacity:.45;border-style:dashed}.t small{display:block;font-weight:400;color:var(--mut);font-size:12px}</style></head>
+<body><div class="wrap"><header><h1>HUB</h1></header>
+<div class="t">
+<a href="kalendar.html"><span>🗓️</span>Kalendář</a>
+<a href="ukoly.html"><span>✅</span>Úkoly</a>
+<div class="s"><span>💰</span>Finance<small>brzy</small></div>
+<div class="s"><span>🏋️</span>Cvičení<small>brzy</small></div>
+<div class="s"><span>💼</span>Práce<small>brzy</small></div>
+</div>
+<p class="empty" style="margin-top:24px"><a href="#" id="rc" style="color:var(--mut)">Změnit společný kód</a></p></div>
+<script>
+try{if(location.hash.length>1)localStorage.setItem("hubcode",location.hash.slice(1))}catch(e){}
+document.getElementById("rc").onclick=function(e){e.preventDefault();try{localStorage.removeItem("hubcode")}catch(x){}location.hash="";location.reload()};
+</script></body></html>

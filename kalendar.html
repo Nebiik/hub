@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Kalendář</title><link rel="stylesheet" href="style.css">
+<style>
+.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}@media(max-width:720px){.grid{grid-template-columns:1fr}}
+.bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.bar h2{font-size:17px;margin:0;text-transform:capitalize}
+.dow,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.dow div{text-align:center;font-size:12px;color:var(--mut)}
+.d{aspect-ratio:1;border:1px solid var(--br);border-radius:10px;background:transparent;padding:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:14px}
+.d.out{opacity:.4}.d.wk{background:rgba(128,128,128,.12)}.d.wk>span:first-child{color:var(--mut)}.d.hol{background:rgba(214,69,69,.16);border-color:rgba(214,69,69,.45)}.d.hol>span:first-child{color:var(--red);font-weight:700}.d.today{border-color:var(--ac);font-weight:700}.d.sel{background:var(--hl);border-color:var(--ac)}
+.dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--mut)}.leg i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-2px;border:1px solid var(--br)}
+h3{font-size:15px;margin:0 0 8px}.w{color:var(--mut);font-size:13px;min-width:70px}
+</style></head>
+<body><div class="wrap">
+<header><a href="index.html">‹ HUB</a><h1>Kalendář</h1></header><div id="msg"></div>
+<div class="grid">
+<section class="card">
+<div class="bar"><button class="nb" id="prev" aria-label="Předchozí měsíc">‹</button><h2 id="mt"></h2><button class="nb" id="next" aria-label="Další měsíc">›</button></div>
+<div class="dow"><div>Po</div><div>Út</div><div>St</div><div>Čt</div><div>Pá</div><div>So</div><div>Ne</div></div>
+<div class="days" id="days"></div>
+<div class="leg"><span><i></i>pracovní den</span><span><i style="background:rgba(128,128,128,.12)"></i>víkend</span><span><i style="background:rgba(214,69,69,.16);border-color:rgba(214,69,69,.45)"></i>státní svátek (volno)</span></div>
+</section>
+<aside>
+<div class="card"><h3 id="seld"></h3><div id="hn" class="empty"></div><div id="list"></div>
+<form id="f"><input id="title" placeholder="Nová událost" required maxlength="80"><input id="date" type="date" required>
+<div class="row"><input id="time" type="time"><select id="type"><option value="meet">Schůzka</option><option value="bday">Narozeniny (každý rok)</option><option value="nday">Svátek (každý rok)</option><option value="other">Jiné</option></select></div>
+<button class="add" type="submit" id="sb">Přidat událost</button><button class="nb" type="button" id="cancel" hidden>Zrušit úpravu</button></form></div>
+<div style="height:16px"></div>
+<div class="card"><h3>Nejbližších 30 dní</h3><div id="up"></div></div>
+</aside></div></div>
+<script type="module">
+import{sync,put,del,hols,ymd}from"./common.js";
+const $=i=>document.getElementById(i),T=["meet","bday","nday","other"];
+let E=[],today=new Date(),view=new Date(today.getFullYear(),today.getMonth(),1),sel=ymd(today),editId=null;
+const evOn=s=>E.filter(e=>e.date===s||(["bday","nday"].includes(e.type)&&e.date.slice(5)===s.slice(5)&&e.date<=s)).sort((a,b)=>(a.time||"")<(b.time||"")?-1:1);
+const hol=s=>hols(+s.slice(0,4))[s];
+const fmt=(s,o)=>new Date(s+"T12:00:00").toLocaleDateString("cs-CZ",o);
+const mk=(t,c,x)=>{const n=document.createElement(t);n.className=c;if(x!=null)n.textContent=x;return n};
+function item(e,s,full){const d=mk("div","ev");d.append(mk("i","dot "+e.type),mk("span","w",full?fmt(s,{weekday:"short",day:"numeric",month:"numeric"}):(e.time||"celý den")));const t=mk("span","",e.title);t.style.flex=1;d.append(t);
+if(!full)[["Upravit","✎",()=>start(e)],["Smazat","×",()=>{if(editId===e.id)stop();del("events",e.id)}]].forEach(([a,ic,fn])=>{const b=mk("button","x",ic);b.title=a;b.onclick=fn;d.append(b)});return d}
+function render(){
+$("mt").textContent=view.toLocaleDateString("cs-CZ",{month:"long",year:"numeric"});
+const g=$("days");g.innerHTML="";const off=(view.getDay()+6)%7,st=new Date(view.getFullYear(),view.getMonth(),1-off),ts=ymd(today);
+for(let i=0;i<42;i++){const d=new Date(st.getFullYear(),st.getMonth(),st.getDate()+i),s=ymd(d),b=mk("button","d"+(d.getMonth()!==view.getMonth()?" out":"")+(s===ts?" today":"")+(s===sel?" sel":"")+(hol(s)?" hol":d.getDay()%6==0?" wk":""));
+const ty=[...new Set(evOn(s).map(e=>e.type))];
+b.innerHTML=`<span>${d.getDate()}</span><span class="dots">${ty.map(t=>`<i class="dot ${t}"></i>`).join("")}</span>`;
+b.onclick=()=>{sel=s;render()};g.append(b)}
+$("seld").textContent=fmt(sel,{weekday:"long",day:"numeric",month:"long"});
+const hn=hol(sel),wd=new Date(sel+"T12:00:00").getDay();$("hn").textContent=hn?"Státní svátek, volno: "+hn:wd%6==0?"Víkend, volno":"";$("hn").style.color=hn?"var(--red)":"";
+const l=$("list");l.innerHTML="";const es=evOn(sel);if(es.length)es.forEach(e=>l.append(item(e,sel)));else l.innerHTML='<div class="empty">Nic naplánováno.</div>';
+const u=$("up");u.innerHTML="";let n=0;for(let k=0;k<30;k++){const s=ymd(new Date(today.getFullYear(),today.getMonth(),today.getDate()+k));evOn(s).forEach(e=>{u.append(item(e,s,1));n++})}
+if(!n)u.innerHTML='<div class="empty">Zatím nic.</div>';
+if(!editId)$("date").value=sel}
+function start(e){editId=e.id;$("title").value=e.title;$("time").value=e.time||"";$("type").value=e.type;$("date").value=e.date;$("sb").textContent="Uložit změny";$("cancel").hidden=false;$("title").focus()}
+function stop(){editId=null;$("f").reset();$("sb").textContent="Přidat událost";$("cancel").hidden=true;render()}
+$("cancel").onclick=stop;
+$("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};
+$("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};
+$("f").onsubmit=x=>{x.preventDefault();const t=$("title").value.trim(),ds=$("date").value||sel;if(!t)return;
+put("events",{id:editId||Date.now()+""+Math.floor(Math.random()*1000),date:ds,time:$("time").value,title:t,type:$("type").value});
+sel=ds;view=new Date(+ds.slice(0,4),+ds.slice(5,7)-1,1);stop()};
+render();
+sync("events",d=>{E=d.map(e=>({id:e.id,date:String(e.date||""),time:String(e.time||""),title:String(e.title||""),type:T.includes(e.type)?e.type:"other"})).filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date));render()});
+</script></body></html>
