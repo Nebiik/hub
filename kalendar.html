@@ -41,12 +41,13 @@ details.card summary{cursor:pointer;color:var(--mut);font-size:14px}details.card
 <label class="opt"><input type="checkbox" id="skp" checked> přeskočit soukromé události</label>
 <label class="opt">Zadal <select id="iown"><option value="Tom">Tom</option><option value="Sabina" selected>Sabina</option></select></label>
 <div id="pv" class="empty"></div><button class="add" id="go" hidden>Importovat</button></div>
+<div class="tl" style="margin-top:20px"><b>Synchronizace Google Kalendáře</b><div id="ls" class="empty">Zatím neproběhla.</div></div>
 <div class="tl" style="margin-top:20px"><b>Hromadné obarvení</b>
 <input id="bt" type="text" placeholder="Slovo v názvu, např. narozeniny">
 <select id="bc"></select><div id="bn" class="empty"></div><button class="add" id="bg" hidden>Obarvit</button></div></details>
 </div>
 <script type="module">
-import{sync,put,del,hols,ymd,occ}from"./common.js";
+import{sync,put,del,hols,ymd,occ,msg}from"./common.js";
 import{nameDay}from"./names.js";
 const $=i=>document.getElementById(i),T=["meet","bday","nday","other"],PAL=[["red","Červená"],["orange","Oranžová"],["yellow","Žlutá"],["green","Zelená"],["blue","Modrá"],["purple","Fialová"],["pink","Růžová"],["grey","Šedá"]];
 let E=[],today=new Date(),view=new Date(today.getFullYear(),today.getMonth(),1),sel=ymd(today),editId=null;
@@ -71,7 +72,7 @@ const l=$("list");l.innerHTML="";const es=evOn(sel);if(es.length)es.forEach(e=>l
 const u=$("up");u.innerHTML="";let n=0;for(let k=0;k<30;k++){const s=ymd(new Date(today.getFullYear(),today.getMonth(),today.getDate()+k));evOn(s).forEach(e=>{u.append(item(e,s,1));n++})}
 if(!n)u.innerHTML='<div class="empty">Zatím nic.</div>';
 if(!editId)$("date").value=sel}
-function start(e){editId=e.id;$("title").value=e.title;$("time").value=e.time||"";$("type").value=e.type;$("date").value=e.date;$("end").value=e.end||"";$("rep").value=e.rep||"";$("by").value=e.by||$("by").value;setCol(e.col||"");$("sb").textContent="Uložit změny";$("cancel").hidden=false;$("title").focus()}
+function start(e){editId=e.id;if(e.src==="gcal")msg("Událost se synchronizuje z Google Kalendáře: změna názvu, data a času se při další synchronizaci přepíše. Barvu a „Zadal“ můžeš měnit.");$("title").value=e.title;$("time").value=e.time||"";$("type").value=e.type;$("date").value=e.date;$("end").value=e.end||"";$("rep").value=e.rep||"";$("by").value=e.by||$("by").value;setCol(e.col||"");$("sb").textContent="Uložit změny";$("cancel").hidden=false;$("title").focus()}
 function stop(){editId=null;$("f").reset();$("by").value=lastBy();setCol("");$("sb").textContent="Přidat událost";$("cancel").hidden=true;render()}
 let pend=[],sk={};
 const bump=k=>sk[k]=(sk[k]||0)+1,un=v=>v.replace(/\\n/gi," ").replace(/\\([,;\\])/g,"$1"),hash=x=>{let h=5381;for(const c of x)h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36)+x.length.toString(36)};
@@ -110,14 +111,15 @@ $("bc").innerHTML=[["","Bez barvy"],...PAL].map(p=>`<option value="${p[0]}">${p[
 const hit=()=>{const q=$("bt").value.trim().toLowerCase();return q?E.filter(e=>e.title.toLowerCase().includes(q)):[]};
 $("bt").oninput=()=>{const n=hit().length;$("bn").textContent=$("bt").value.trim()?"Nalezeno "+n+" událostí.":"";$("bg").hidden=!n};
 $("bg").onclick=async()=>{const h=hit(),c=$("bc").value;await Promise.all(h.map(e=>put("events",{...e,col:c})));$("bn").textContent="Obarveno "+h.length+" událostí.";$("bg").hidden=true;$("bt").value=""};
+sync("meta",d=>{const g=d.find(x=>x.id==="gcal");if(g&&g.at)$("ls").textContent="Naposledy: "+new Date(g.at).toLocaleString("cs-CZ")+" (událostí "+g.n+", nových "+g.added+", změněných "+g.updated+", odstraněných "+g.removed+")."});
 $("cancel").onclick=stop;
 $("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};
 $("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};
 $("f").onsubmit=x=>{x.preventDefault();const t=$("title").value.trim(),ds=$("date").value||sel;if(!t)return;
 const ed=$("end").value>ds?$("end").value:"",ty=$("type").value,old=E.find(q=>q.id===editId),rp=["bday","nday"].includes(ty)?"y":$("rep").value;
 try{localStorage.setItem("hubby",$("by").value)}catch(z){}
-put("events",{id:editId||Date.now()+""+Math.floor(Math.random()*1000),date:ds,time:$("time").value,title:t,type:ty,end:ed,by:$("by").value,col:colv,rep:rp,until:old&&old.rep===rp?(old.until||""):""});
+put("events",{id:editId||Date.now()+""+Math.floor(Math.random()*1000),date:ds,time:$("time").value,title:t,type:ty,end:ed,src:old&&old.src?old.src:"",by:$("by").value,col:colv,rep:rp,until:old&&old.rep===rp?(old.until||""):""});
 sel=ds;view=new Date(+ds.slice(0,4),+ds.slice(5,7)-1,1);stop()};
 render();
-sync("events",d=>{E=d.map(e=>({id:e.id,date:String(e.date||""),time:String(e.time||""),title:String(e.title||""),type:T.includes(e.type)?e.type:"other",by:String(e.by||""),col:PAL.some(p=>p[0]===e.col)?e.col:"",rep:["d","w","m","y"].includes(e.rep)?e.rep:"",until:/^\d{4}-\d\d-\d\d$/.test(e.until)?e.until:"",end:/^\d{4}-\d\d-\d\d$/.test(e.end)?e.end:""})).filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date));render()});
+sync("events",d=>{E=d.map(e=>({id:e.id,date:String(e.date||""),time:String(e.time||""),title:String(e.title||""),type:T.includes(e.type)?e.type:"other",by:String(e.by||""),src:e.src==="gcal"?"gcal":"",col:PAL.some(p=>p[0]===e.col)?e.col:"",rep:["d","w","m","y"].includes(e.rep)?e.rep:"",until:/^\d{4}-\d\d-\d\d$/.test(e.until)?e.until:"",end:/^\d{4}-\d\d-\d\d$/.test(e.end)?e.end:""})).filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date));render()});
 </script></body></html>
