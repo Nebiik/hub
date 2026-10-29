@@ -1,0 +1,18 @@
+name: Synchronizace Google Kalendáře
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save firebase-admin@12
+      - run: node sync.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GCAL_ICS_URL: ${{ secrets.GCAL_ICS_URL }}
