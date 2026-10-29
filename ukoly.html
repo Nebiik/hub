@@ -15,7 +15,7 @@
 .sec{font-size:13px;color:var(--mut);margin:16px 0 2px;display:flex;justify-content:space-between;align-items:center}
 .nf{display:flex;gap:8px}
 .nf input{flex:1;min-width:0}
-.nf button{width:46px;font-size:24px;padding:0;line-height:1}
+.nf button{width:46px;padding:0;display:flex;align-items:center;justify-content:center}
 .opt{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
 .opt input{width:auto;padding:6px 8px;font-size:14px}
 </style></head>
@@ -30,7 +30,7 @@
 </section>
 <section class="card">
 <div class="hd"><h2>Nový úkol</h2></div>
-<form id="f" style="margin:0"><div class="nf"><input id="title" type="text" placeholder="Co je potřeba udělat?" required maxlength="100"><button class="add" type="submit" aria-label="Přidat úkol">+</button></div>
+<form id="f" style="margin:0"><div class="nf"><input id="title" type="text" placeholder="Co je potřeba udělat?" required maxlength="100"><button class="add" type="submit" aria-label="Přidat úkol"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3.5v13M3.5 10h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg></button></div>
 <label class="opt">Termín (nepovinný) <input id="due" type="date"></label></form>
 </section>
 </div></div>
