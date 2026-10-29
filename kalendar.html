@@ -21,7 +21,7 @@ h3{font-size:15px;margin:0 0 8px}.w{color:var(--mut);font-size:13px;min-width:70
 <div class="leg"><span><i></i>pracovní den</span><span><i style="background:rgba(128,128,128,.12)"></i>víkend</span><span><i style="background:rgba(214,69,69,.16);border-color:rgba(214,69,69,.45)"></i>státní svátek (volno)</span></div>
 </section>
 <aside>
-<div class="card"><h3 id="seld"></h3><div id="hn" class="empty"></div><div id="list"></div>
+<div class="card"><h3 id="seld"></h3><div id="hn" class="empty"></div><div id="nd" class="empty"></div><div id="list"></div>
 <form id="f"><input id="title" placeholder="Nová událost" required maxlength="80"><input id="date" type="date" required>
 <div class="row"><input id="time" type="time"><select id="type"><option value="meet">Schůzka</option><option value="bday">Narozeniny (každý rok)</option><option value="nday">Svátek (každý rok)</option><option value="other">Jiné</option></select></div>
 <button class="add" type="submit" id="sb">Přidat událost</button><button class="nb" type="button" id="cancel" hidden>Zrušit úpravu</button></form></div>
@@ -30,6 +30,7 @@ h3{font-size:15px;margin:0 0 8px}.w{color:var(--mut);font-size:13px;min-width:70
 </aside></div></div>
 <script type="module">
 import{sync,put,del,hols,ymd}from"./common.js";
+import{nameDay}from"./names.js";
 const $=i=>document.getElementById(i),T=["meet","bday","nday","other"];
 let E=[],today=new Date(),view=new Date(today.getFullYear(),today.getMonth(),1),sel=ymd(today),editId=null;
 const evOn=s=>E.filter(e=>e.date===s||(["bday","nday"].includes(e.type)&&e.date.slice(5)===s.slice(5)&&e.date<=s)).sort((a,b)=>(a.time||"")<(b.time||"")?-1:1);
@@ -46,7 +47,7 @@ const ty=[...new Set(evOn(s).map(e=>e.type))];
 b.innerHTML=`<span>${d.getDate()}</span><span class="dots">${ty.map(t=>`<i class="dot ${t}"></i>`).join("")}</span>`;
 b.onclick=()=>{sel=s;render()};g.append(b)}
 $("seld").textContent=fmt(sel,{weekday:"long",day:"numeric",month:"long"});
-const hn=hol(sel),wd=new Date(sel+"T12:00:00").getDay();$("hn").textContent=hn?"Státní svátek, volno: "+hn:wd%6==0?"Víkend, volno":"";$("hn").style.color=hn?"var(--red)":"";
+const hn=hol(sel),wd=new Date(sel+"T12:00:00").getDay();$("hn").textContent=hn?"Státní svátek, volno: "+hn:wd%6==0?"Víkend, volno":"";$("hn").style.color=hn?"var(--red)":"";const nn=nameDay(+sel.slice(5,7),+sel.slice(8,10));$("nd").textContent=nn?"Svátek má: "+nn:"";
 const l=$("list");l.innerHTML="";const es=evOn(sel);if(es.length)es.forEach(e=>l.append(item(e,sel)));else l.innerHTML='<div class="empty">Nic naplánováno.</div>';
 const u=$("up");u.innerHTML="";let n=0;for(let k=0;k<30;k++){const s=ymd(new Date(today.getFullYear(),today.getMonth(),today.getDate()+k));evOn(s).forEach(e=>{u.append(item(e,s,1));n++})}
 if(!n)u.innerHTML='<div class="empty">Zatím nic.</div>';
