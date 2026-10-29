@@ -10,7 +10,8 @@
 .dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}
 .leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--mut)}.leg i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-2px;border:1px solid var(--br)}
 h3{font-size:15px;margin:0 0 8px}.w{color:var(--mut);font-size:13px;min-width:70px}
-.ow-me{background:var(--m)}.ow-ot{background:var(--b)}.ow-na{background:var(--mut)}
+.c-red{background:#e5484d}.c-orange{background:#f08a24}.c-yellow{background:#f5c518}.c-green{background:#30a46c}.c-blue{background:#3e63dd}.c-purple{background:#8e4ec6}.c-pink{background:#e93d82}.c-grey{background:#8b8d98}
+#cols{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--br);cursor:pointer;padding:0}.sw.none{background:var(--bg);color:var(--mut);font-size:16px;line-height:1}.sw.on{outline:2px solid var(--tx);outline-offset:2px}.tl input[type=text]{padding:8px 12px;border:1px solid var(--br);border-radius:12px;background:var(--bg);width:100%}
 details.card summary{cursor:pointer;color:var(--mut);font-size:14px}details.card[open] summary{margin-bottom:12px}.tl{display:grid;gap:10px}.tl select{padding:8px;border:1px solid var(--br);border-radius:12px;background:var(--bg)}.opt{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
 </style></head>
 <body><div class="wrap">
@@ -20,13 +21,14 @@ details.card summary{cursor:pointer;color:var(--mut);font-size:14px}details.card
 <div class="bar"><button class="nb" id="prev" aria-label="Předchozí měsíc">‹</button><h2 id="mt"></h2><button class="nb" id="next" aria-label="Další měsíc">›</button></div>
 <div class="dow"><div>Po</div><div>Út</div><div>St</div><div>Čt</div><div>Pá</div><div>So</div><div>Ne</div></div>
 <div class="days" id="days"></div>
-<div class="leg"><span><i></i>pracovní den</span><span><i style="background:rgba(128,128,128,.12)"></i>víkend</span><span><i style="background:rgba(214,69,69,.16);border-color:rgba(214,69,69,.45)"></i>státní svátek (volno)</span><span><i style="background:var(--m);border-radius:50%"></i>moje</span><span><i style="background:var(--b);border-radius:50%"></i>druhého</span><span><i style="background:var(--mut);border-radius:50%"></i>bez přiřazení</span></div>
+<div class="leg"><span><i></i>pracovní den</span><span><i style="background:rgba(128,128,128,.12)"></i>víkend</span><span><i style="background:rgba(214,69,69,.16);border-color:rgba(214,69,69,.45)"></i>státní svátek (volno)</span></div>
 </section>
 <aside>
 <div class="card"><h3 id="seld"></h3><div id="hn" class="empty"></div><div id="nd" class="empty"></div><div id="list"></div>
 <form id="f"><input id="title" placeholder="Nová událost" required maxlength="80"><input id="date" type="date" required>
 <div class="row"><input id="time" type="time"><select id="type"><option value="meet">Schůzka</option><option value="bday">Narozeniny (každý rok)</option><option value="nday">Svátek (každý rok)</option><option value="other">Jiné</option></select></div>
-<div class="row"><select id="rep"><option value="">Neopakovat</option><option value="d">Každý den</option><option value="w">Každý týden</option><option value="m">Každý měsíc</option><option value="y">Každý rok</option></select><select id="own"><option value="me">Moje</option><option value="ot">Druhého</option></select></div>
+<div class="row"><select id="rep"><option value="">Neopakovat</option><option value="d">Každý den</option><option value="w">Každý týden</option><option value="m">Každý měsíc</option><option value="y">Každý rok</option></select><select id="by"><option value="Tom">Zadal: Tom</option><option value="Sabina">Zadal: Sabina</option></select></div>
+<div class="opt">Barva <div id="cols"></div></div>
 <button class="add" type="submit" id="sb">Přidat událost</button><button class="nb" type="button" id="cancel" hidden>Zrušit úpravu</button></form></div>
 <div style="height:16px"></div>
 <div class="card"><h3>Nejbližších 30 dní</h3><div id="up"></div></div>
@@ -35,21 +37,23 @@ details.card summary{cursor:pointer;color:var(--mut);font-size:14px}details.card
 <div class="tl"><b>Import z kalendáře (.ics)</b>
 <input type="file" id="ics" accept=".ics,text/calendar" multiple>
 <label class="opt"><input type="checkbox" id="skp" checked> přeskočit soukromé události</label>
-<label class="opt">Čí události to jsou <select id="iown"><option value="me">Moje</option><option value="ot" selected>Druhého</option></select></label>
-<div id="pv" class="empty"></div><button class="add" id="go" hidden>Importovat</button></div></details>
+<label class="opt">Zadal <select id="iown"><option value="Tom">Tom</option><option value="Sabina" selected>Sabina</option></select></label>
+<div id="pv" class="empty"></div><button class="add" id="go" hidden>Importovat</button></div>
+<div class="tl" style="margin-top:20px"><b>Hromadné obarvení</b>
+<input id="bt" type="text" placeholder="Slovo v názvu, např. narozeniny">
+<select id="bc"></select><div id="bn" class="empty"></div><button class="add" id="bg" hidden>Obarvit</button></div></details>
 </div>
 <script type="module">
-import{sync,put,del,hols,ymd,me,occ}from"./common.js";
+import{sync,put,del,hols,ymd,occ}from"./common.js";
 import{nameDay}from"./names.js";
-const $=i=>document.getElementById(i),T=["meet","bday","nday","other"];
+const $=i=>document.getElementById(i),T=["meet","bday","nday","other"],PAL=[["red","Červená"],["orange","Oranžová"],["yellow","Žlutá"],["green","Zelená"],["blue","Modrá"],["purple","Fialová"],["pink","Růžová"],["grey","Šedá"]];
 let E=[],today=new Date(),view=new Date(today.getFullYear(),today.getMonth(),1),sel=ymd(today),editId=null;
 const evOn=s=>E.filter(e=>occ(e,s)).sort((a,b)=>(a.time||"")<(b.time||"")?-1:1);
 const hol=s=>hols(+s.slice(0,4))[s];
-let uid="";me.then(u=>{uid=u;render()});
-const isMine=e=>e.owner?(e.owner[0]==="~"?e.owner.slice(1)!==uid:e.owner===uid):null,oc=e=>"ow-"+(isMine(e)===true?"me":isMine(e)===false?"ot":"na");
+const oc=e=>e.col?"c-"+e.col:e.type;
 const fmt=(s,o)=>new Date(s+"T12:00:00").toLocaleDateString("cs-CZ",o);
 const mk=(t,c,x)=>{const n=document.createElement(t);n.className=c;if(x!=null)n.textContent=x;return n};
-function item(e,s,full){const d=mk("div","ev");d.append(mk("i","dot "+oc(e)),mk("span","w",(full?fmt(s,{weekday:"short",day:"numeric",month:"numeric"}):(e.time||"celý den"))+(e.rep?" ↻":"")));const t=mk("span","",(e.type==="bday"?"🎂 ":e.type==="nday"?"🎉 ":"")+e.title);t.style.flex=1;d.append(t);
+function item(e,s,full){const d=mk("div","ev");d.append(mk("i","dot "+oc(e)),mk("span","w",(full?fmt(s,{weekday:"short",day:"numeric",month:"numeric"}):(e.time||"celý den"))+(e.rep?" ↻":"")));const t=mk("span","",(e.type==="bday"?"🎂 ":e.type==="nday"?"🎉 ":"")+e.title);t.style.flex=1;d.append(t);if(e.by&&!full)d.append(mk("span","empty",e.by));
 if(!full)[["Upravit","✎",()=>start(e)],["Smazat","×",()=>{if(editId===e.id)stop();del("events",e.id)}]].forEach(([a,ic,fn])=>{const b=mk("button","x",ic);b.title=a;b.onclick=fn;d.append(b)});return d}
 function render(){
 $("mt").textContent=view.toLocaleDateString("cs-CZ",{month:"long",year:"numeric"});
@@ -64,8 +68,8 @@ const l=$("list");l.innerHTML="";const es=evOn(sel);if(es.length)es.forEach(e=>l
 const u=$("up");u.innerHTML="";let n=0;for(let k=0;k<30;k++){const s=ymd(new Date(today.getFullYear(),today.getMonth(),today.getDate()+k));evOn(s).forEach(e=>{u.append(item(e,s,1));n++})}
 if(!n)u.innerHTML='<div class="empty">Zatím nic.</div>';
 if(!editId)$("date").value=sel}
-function start(e){editId=e.id;$("title").value=e.title;$("time").value=e.time||"";$("type").value=e.type;$("date").value=e.date;$("rep").value=e.rep||"";$("own").value=isMine(e)===false?"ot":"me";$("sb").textContent="Uložit změny";$("cancel").hidden=false;$("title").focus()}
-function stop(){editId=null;$("f").reset();$("sb").textContent="Přidat událost";$("cancel").hidden=true;render()}
+function start(e){editId=e.id;$("title").value=e.title;$("time").value=e.time||"";$("type").value=e.type;$("date").value=e.date;$("rep").value=e.rep||"";$("by").value=e.by||$("by").value;setCol(e.col||"");$("sb").textContent="Uložit změny";$("cancel").hidden=false;$("title").focus()}
+function stop(){editId=null;$("f").reset();$("by").value=lastBy();setCol("");$("sb").textContent="Přidat událost";$("cancel").hidden=true;render()}
 let pend=[],sk={};
 const bump=k=>sk[k]=(sk[k]||0)+1,un=v=>v.replace(/\\n/gi," ").replace(/\\([,;\\])/g,"$1"),hash=x=>{let h=5381;for(const c of x)h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36)+x.length.toString(36)};
 function fin(c){
@@ -89,16 +93,26 @@ function parse(txt){let c=null;txt.replace(/\r?\n[ \t]/g,"").split(/\r?\n/).forE
 $("ics").onchange=async()=>{pend=[];sk={};for(const f of $("ics").files)parse(await f.text());
 const sx=Object.entries(sk).map(([k,v])=>v+"× "+k).join(", ");
 $("pv").textContent=(pend.length?"Nalezeno "+pend.length+" událostí ("+pend.filter(e=>e.rep).length+" opakujících se).":"V souboru se nic nenašlo.")+(sx?" Přeskočeno: "+sx+".":"");$("go").hidden=!pend.length};
-$("go").onclick=async()=>{const o=$("iown").value==="me"?uid:"~"+uid;$("go").disabled=true;let n=0;
-for(let i=0;i<pend.length;i+=25){await Promise.all(pend.slice(i,i+25).map(e=>put("events",{id:"i"+hash(e.uid),date:e.date,time:e.time,title:e.title,type:"other",owner:o,rep:e.rep,until:e.until})));n=Math.min(i+25,pend.length);$("pv").textContent="Přeneseno "+n+" z "+pend.length+"…"}
+$("go").onclick=async()=>{$("go").disabled=true;let n=0;
+for(let i=0;i<pend.length;i+=25){await Promise.all(pend.slice(i,i+25).map(e=>{const id="i"+hash(e.uid),x=E.find(q=>q.id===id)||{};return put("events",{id,date:e.date,time:e.time,title:e.title,type:"other",by:x.by||$("iown").value,col:x.col||"",rep:e.rep,until:e.until})}));n=Math.min(i+25,pend.length);$("pv").textContent="Přeneseno "+n+" z "+pend.length+"…"}
 $("pv").textContent="Hotovo, přeneseno "+n+" událostí.";$("go").disabled=false;$("go").hidden=true;$("ics").value="";pend=[]};
+let colv="";
+const lastBy=()=>{try{return localStorage.getItem("hubby")||"Tom"}catch(z){return"Tom"}};
+function setCol(c){colv=c;document.querySelectorAll("#cols .sw").forEach(b=>b.classList.toggle("on",b.dataset.c===c))}
+[["","Bez barvy"],...PAL].forEach(([k,n])=>{const b=mk("button","sw"+(k?" c-"+k:" none"),k?null:"×");b.type="button";b.title=n;b.dataset.c=k;b.setAttribute("aria-label",n);b.onclick=()=>setCol(k);$("cols").append(b)});
+setCol("");$("by").value=lastBy();
+$("bc").innerHTML=[["","Bez barvy"],...PAL].map(p=>`<option value="${p[0]}">${p[1]}</option>`).join("");
+const hit=()=>{const q=$("bt").value.trim().toLowerCase();return q?E.filter(e=>e.title.toLowerCase().includes(q)):[]};
+$("bt").oninput=()=>{const n=hit().length;$("bn").textContent=$("bt").value.trim()?"Nalezeno "+n+" událostí.":"";$("bg").hidden=!n};
+$("bg").onclick=async()=>{const h=hit(),c=$("bc").value;await Promise.all(h.map(e=>put("events",{...e,col:c})));$("bn").textContent="Obarveno "+h.length+" událostí.";$("bg").hidden=true;$("bt").value=""};
 $("cancel").onclick=stop;
 $("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};
 $("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};
 $("f").onsubmit=x=>{x.preventDefault();const t=$("title").value.trim(),ds=$("date").value||sel;if(!t)return;
 const ty=$("type").value,old=E.find(q=>q.id===editId),rp=["bday","nday"].includes(ty)?"y":$("rep").value;
-put("events",{id:editId||Date.now()+""+Math.floor(Math.random()*1000),date:ds,time:$("time").value,title:t,type:ty,owner:$("own").value==="me"?uid:"~"+uid,rep:rp,until:old&&old.rep===rp?(old.until||""):""});
+try{localStorage.setItem("hubby",$("by").value)}catch(z){}
+put("events",{id:editId||Date.now()+""+Math.floor(Math.random()*1000),date:ds,time:$("time").value,title:t,type:ty,by:$("by").value,col:colv,rep:rp,until:old&&old.rep===rp?(old.until||""):""});
 sel=ds;view=new Date(+ds.slice(0,4),+ds.slice(5,7)-1,1);stop()};
 render();
-sync("events",d=>{E=d.map(e=>({id:e.id,date:String(e.date||""),time:String(e.time||""),title:String(e.title||""),type:T.includes(e.type)?e.type:"other",owner:String(e.owner||""),rep:["d","w","m","y"].includes(e.rep)?e.rep:"",until:/^\d{4}-\d\d-\d\d$/.test(e.until)?e.until:""})).filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date));render()});
+sync("events",d=>{E=d.map(e=>({id:e.id,date:String(e.date||""),time:String(e.time||""),title:String(e.title||""),type:T.includes(e.type)?e.type:"other",by:String(e.by||""),col:PAL.some(p=>p[0]===e.col)?e.col:"",rep:["d","w","m","y"].includes(e.rep)?e.rep:"",until:/^\d{4}-\d\d-\d\d$/.test(e.until)?e.until:""})).filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date));render()});
 </script></body></html>
