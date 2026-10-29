@@ -28,3 +28,4 @@ const gf=new Date(y,E.getMonth(),E.getDate()-2),em=new Date(y,E.getMonth(),E.get
 add(1,1,"Nový rok, Den obnovy samostatného českého státu");add(gf.getMonth()+1,gf.getDate(),"Velký pátek");add(em.getMonth()+1,em.getDate(),"Velikonoční pondělí");
 add(5,1,"Svátek práce");add(5,8,"Den vítězství");add(7,5,"Den slovanských věrozvěstů Cyrila a Metoděje");add(7,6,"Den upálení mistra Jana Husa");add(9,28,"Den české státnosti");add(10,28,"Den vzniku samostatného československého státu");add(11,17,"Den boje za svobodu a demokracii");add(12,24,"Štědrý den");add(12,25,"1. svátek vánoční");add(12,26,"2. svátek vánoční");
 return hc[y]=h}
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
