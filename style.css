@@ -1,6 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&display=swap");
 :root{--bg:#eef1f6;--card:#fff;--tx:#121c2b;--mut:#5d6b80;--br:#dbe1ea;--ac:#3a4fd7;--hl:#e6eaff;--m:#3a4fd7;--b:#e0567a;--o:#0f9d8a;--n:#e8a317;--red:#d9453b;--f:"Bricolage Grotesque",system-ui,sans-serif}
-@media(prefers-color-scheme:dark){:root{--bg:#0d131c;--card:#161e2a;--tx:#e8edf5;--mut:#8e9bb0;--br:#27313f;--ac:#8b9cff;--hl:#212c4d;--m:#8b9cff}.add{color:#0d131c!important}}
+:root{color-scheme:light dark}
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0d131c;--card:#161e2a;--tx:#e8edf5;--mut:#8e9bb0;--br:#27313f;--ac:#8b9cff;--hl:#212c4d;--m:#8b9cff}
+:root[data-theme="dark"] .add{color:#0d131c}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d131c;--card:#161e2a;--tx:#e8edf5;--mut:#8e9bb0;--br:#27313f;--ac:#8b9cff;--hl:#212c4d;--m:#8b9cff}:root:not([data-theme="light"]) .add{color:#0d131c}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 .wrap{max-width:980px;margin:0 auto;padding:16px}

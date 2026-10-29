@@ -2,6 +2,13 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-ap
 import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import{getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const fs=getFirestore(initializeApp({apiKey:"AIzaSyC2SgxfHJMHtb-C4A2QTjwXaNQ1EiFRIj0",authDomain:"hubnebik.firebaseapp.com",projectId:"hubnebik",storageBucket:"hubnebik.firebasestorage.app",messagingSenderId:"469840567753",appId:"1:469840567753:web:5ca65b5c8d00fd952a9c18"}));
+const R=document.documentElement;
+try{const t=localStorage.getItem("hubtheme");if(t)R.dataset.theme=t}catch(e){}
+const dk=()=>R.dataset.theme?R.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches,tb=document.createElement("button"),sh=()=>tb.textContent=dk()?"☀️":"🌙";
+tb.style.cssText="position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:100;width:44px;height:44px;border-radius:50%;border:1px solid var(--br);background:var(--card);color:var(--tx);font-size:20px;cursor:pointer";
+tb.setAttribute("aria-label","Přepnout světlý a tmavý režim");
+tb.onclick=()=>{const t=dk()?"light":"dark";R.dataset.theme=t;try{localStorage.setItem("hubtheme",t)}catch(e){}sh()};
+sh();document.body.append(tb);
 export const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 export function msg(t){const m=document.getElementById("msg");if(!m)return;m.textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>m.textContent="",8000)}
 const g=i=>document.getElementById(i),auth=getAuth(),ov=document.createElement("div");
