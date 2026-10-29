@@ -13,6 +13,7 @@ h3{font-size:15px;margin:0 0 8px}.w{color:var(--mut);font-size:13px;min-width:70
 .c-red{background:#e5484d}.c-orange{background:#f08a24}.c-yellow{background:#f5c518}.c-green{background:#30a46c}.c-blue{background:#3e63dd}.c-purple{background:#8e4ec6}.c-pink{background:#e93d82}.c-grey{background:#8b8d98}
 #cols{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--br);cursor:pointer;padding:0}.sw.none{background:var(--bg);color:var(--mut);font-size:16px;line-height:1}.sw.on{outline:2px solid var(--tx);outline-offset:2px}.tl input[type=text]{padding:8px 12px;border:1px solid var(--br);border-radius:12px;background:var(--bg);width:100%}
 details.card summary{cursor:pointer;color:var(--mut);font-size:14px}details.card[open] summary{margin-bottom:12px}.tl{display:grid;gap:10px}.tl select{padding:8px;border:1px solid var(--br);border-radius:12px;background:var(--bg)}.opt{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
+.opt input{width:auto;padding:6px 8px;font-size:14px}
 </style></head>
 <body><div class="wrap">
 <header><a href="index.html">‹ HUB</a><h1>Kalendář</h1></header><div id="msg"></div>
@@ -26,6 +27,7 @@ details.card summary{cursor:pointer;color:var(--mut);font-size:14px}details.card
 <aside>
 <div class="card"><h3 id="seld"></h3><div id="hn" class="empty"></div><div id="nd" class="empty"></div><div id="list"></div>
 <form id="f"><input id="title" placeholder="Nová událost" required maxlength="80"><input id="date" type="date" required>
+<label class="opt">Do (nepovinné, víc dní) <input id="end" type="date"></label>
 <div class="row"><input id="time" type="time"><select id="type"><option value="meet">Schůzka</option><option value="bday">Narozeniny (každý rok)</option><option value="nday">Svátek (každý rok)</option><option value="other">Jiné</option></select></div>
 <div class="row"><select id="rep"><option value="">Neopakovat</option><option value="d">Každý den</option><option value="w">Každý týden</option><option value="m">Každý měsíc</option><option value="y">Každý rok</option></select><select id="by"><option value="Tom">Zadal: Tom</option><option value="Sabina">Zadal: Sabina</option></select></div>
 <div class="opt">Barva <div id="cols"></div></div>
@@ -52,8 +54,9 @@ const evOn=s=>E.filter(e=>occ(e,s)).sort((a,b)=>(a.time||"")<(b.time||"")?-1:1);
 const hol=s=>hols(+s.slice(0,4))[s];
 const oc=e=>e.col?"c-"+e.col:e.type;
 const fmt=(s,o)=>new Date(s+"T12:00:00").toLocaleDateString("cs-CZ",o);
+const dm=s=>new Date(s+"T12:00:00").toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"});
 const mk=(t,c,x)=>{const n=document.createElement(t);n.className=c;if(x!=null)n.textContent=x;return n};
-function item(e,s,full){const d=mk("div","ev");d.append(mk("i","dot "+oc(e)),mk("span","w",(full?fmt(s,{weekday:"short",day:"numeric",month:"numeric"}):(e.time||"celý den"))+(e.rep?" ↻":"")));const t=mk("span","",(e.type==="bday"?"🎂 ":e.type==="nday"?"🎉 ":"")+e.title);t.style.flex=1;d.append(t);if(e.by&&!full)d.append(mk("span","empty",e.by));
+function item(e,s,full){const d=mk("div","ev");d.append(mk("i","dot "+oc(e)),mk("span","w",(full?fmt(s,{weekday:"short",day:"numeric",month:"numeric"}):(e.end&&e.end>e.date?dm(e.date)+"–"+dm(e.end):(e.time||"celý den")))+(e.rep?" ↻":"")));const t=mk("span","",(e.type==="bday"?"🎂 ":e.type==="nday"?"🎉 ":"")+e.title+(full&&e.end&&e.end>e.date?" (do "+dm(e.end)+")":""));t.style.flex=1;d.append(t);if(e.by&&!full)d.append(mk("span","empty",e.by));
 if(!full)[["Upravit","✎",()=>start(e)],["Smazat","×",()=>{if(editId===e.id)stop();del("events",e.id)}]].forEach(([a,ic,fn])=>{const b=mk("button","x",ic);b.title=a;b.onclick=fn;d.append(b)});return d}
 function render(){
 $("mt").textContent=view.toLocaleDateString("cs-CZ",{month:"long",year:"numeric"});
@@ -68,7 +71,7 @@ const l=$("list");l.innerHTML="";const es=evOn(sel);if(es.length)es.forEach(e=>l
 const u=$("up");u.innerHTML="";let n=0;for(let k=0;k<30;k++){const s=ymd(new Date(today.getFullYear(),today.getMonth(),today.getDate()+k));evOn(s).forEach(e=>{u.append(item(e,s,1));n++})}
 if(!n)u.innerHTML='<div class="empty">Zatím nic.</div>';
 if(!editId)$("date").value=sel}
-function start(e){editId=e.id;$("title").value=e.title;$("time").value=e.time||"";$("type").value=e.type;$("date").value=e.date;$("rep").value=e.rep||"";$("by").value=e.by||$("by").value;setCol(e.col||"");$("sb").textContent="Uložit změny";$("cancel").hidden=false;$("title").focus()}
+function start(e){editId=e.id;$("title").value=e.title;$("time").value=e.time||"";$("type").value=e.type;$("date").value=e.date;$("end").value=e.end||"";$("rep").value=e.rep||"";$("by").value=e.by||$("by").value;setCol(e.col||"");$("sb").textContent="Uložit změny";$("cancel").hidden=false;$("title").focus()}
 function stop(){editId=null;$("f").reset();$("by").value=lastBy();setCol("");$("sb").textContent="Přidat událost";$("cancel").hidden=true;render()}
 let pend=[],sk={};
 const bump=k=>sk[k]=(sk[k]||0)+1,un=v=>v.replace(/\\n/gi," ").replace(/\\([,;\\])/g,"$1"),hash=x=>{let h=5381;for(const c of x)h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36)+x.length.toString(36)};
@@ -88,13 +91,15 @@ if(!F||(r.INTERVAL&&r.INTERVAL!=="1")||r.BYSETPOS||(F==="m"&&r.BYDAY)||(F==="w"&
 rep=F;
 if(r.UNTIL){const u=r.UNTIL.match(/^(\d{4})(\d\d)(\d\d)/);if(u)until=u[1]+"-"+u[2]+"-"+u[3]}
 else if(r.COUNT){const n=+r.COUNT-1,b=new Date(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8,10));if(F==="d")b.setDate(b.getDate()+n);if(F==="w")b.setDate(b.getDate()+7*n);if(F==="m")b.setMonth(b.getMonth()+n);if(F==="y")b.setFullYear(b.getFullYear()+n);until=ymd(b)}}
-pend.push({uid:c.UID||v+c.SUMMARY,date:d,time:t,title:un(c.SUMMARY).slice(0,80),rep,until})}
+let end="";const w=c.DTEND&&c.DTEND.match(/^(\d{4})(\d\d)(\d\d)(?:T(\d\d)(\d\d)(\d\d)?(Z)?)?$/);
+if(w){const e2=w[4]?(w[7]?ymd(new Date(Date.UTC(+w[1],+w[2]-1,+w[3],+w[4],+w[5]))):w[1]+"-"+w[2]+"-"+w[3]):ymd(new Date(+w[1],+w[2]-1,+w[3]-1));if(e2>d)end=e2}
+pend.push({uid:c.UID||v+c.SUMMARY,date:d,time:t,title:un(c.SUMMARY).slice(0,80),rep,until,end})}
 function parse(txt){let c=null;txt.replace(/\r?\n[ \t]/g,"").split(/\r?\n/).forEach(l=>{if(l==="BEGIN:VEVENT"){c={};return}if(l==="END:VEVENT"){if(c)fin(c);c=null;return}if(!c)return;const i=l.indexOf(":");if(i<0)return;const k=l.slice(0,i).split(";")[0].toUpperCase();if(!(k in c))c[k]=l.slice(i+1)})}
 $("ics").onchange=async()=>{pend=[];sk={};for(const f of $("ics").files)parse(await f.text());
 const sx=Object.entries(sk).map(([k,v])=>v+"× "+k).join(", ");
 $("pv").textContent=(pend.length?"Nalezeno "+pend.length+" událostí ("+pend.filter(e=>e.rep).length+" opakujících se).":"V souboru se nic nenašlo.")+(sx?" Přeskočeno: "+sx+".":"");$("go").hidden=!pend.length};
 $("go").onclick=async()=>{$("go").disabled=true;let n=0;
-for(let i=0;i<pend.length;i+=25){await Promise.all(pend.slice(i,i+25).map(e=>{const id="i"+hash(e.uid),x=E.find(q=>q.id===id)||{};return put("events",{id,date:e.date,time:e.time,title:e.title,type:"other",by:x.by||$("iown").value,col:x.col||"",rep:e.rep,until:e.until})}));n=Math.min(i+25,pend.length);$("pv").textContent="Přeneseno "+n+" z "+pend.length+"…"}
+for(let i=0;i<pend.length;i+=25){await Promise.all(pend.slice(i,i+25).map(e=>{const id="i"+hash(e.uid),x=E.find(q=>q.id===id)||{};return put("events",{id,date:e.date,time:e.time,title:e.title,type:"other",by:x.by||$("iown").value,col:x.col||"",rep:e.rep,until:e.until,end:e.end})}));n=Math.min(i+25,pend.length);$("pv").textContent="Přeneseno "+n+" z "+pend.length+"…"}
 $("pv").textContent="Hotovo, přeneseno "+n+" událostí.";$("go").disabled=false;$("go").hidden=true;$("ics").value="";pend=[]};
 let colv="";
 const lastBy=()=>{try{return localStorage.getItem("hubby")||"Tom"}catch(z){return"Tom"}};
@@ -109,10 +114,10 @@ $("cancel").onclick=stop;
 $("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};
 $("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};
 $("f").onsubmit=x=>{x.preventDefault();const t=$("title").value.trim(),ds=$("date").value||sel;if(!t)return;
-const ty=$("type").value,old=E.find(q=>q.id===editId),rp=["bday","nday"].includes(ty)?"y":$("rep").value;
+const ed=$("end").value>ds?$("end").value:"",ty=$("type").value,old=E.find(q=>q.id===editId),rp=["bday","nday"].includes(ty)?"y":$("rep").value;
 try{localStorage.setItem("hubby",$("by").value)}catch(z){}
-put("events",{id:editId||Date.now()+""+Math.floor(Math.random()*1000),date:ds,time:$("time").value,title:t,type:ty,by:$("by").value,col:colv,rep:rp,until:old&&old.rep===rp?(old.until||""):""});
+put("events",{id:editId||Date.now()+""+Math.floor(Math.random()*1000),date:ds,time:$("time").value,title:t,type:ty,end:ed,by:$("by").value,col:colv,rep:rp,until:old&&old.rep===rp?(old.until||""):""});
 sel=ds;view=new Date(+ds.slice(0,4),+ds.slice(5,7)-1,1);stop()};
 render();
-sync("events",d=>{E=d.map(e=>({id:e.id,date:String(e.date||""),time:String(e.time||""),title:String(e.title||""),type:T.includes(e.type)?e.type:"other",by:String(e.by||""),col:PAL.some(p=>p[0]===e.col)?e.col:"",rep:["d","w","m","y"].includes(e.rep)?e.rep:"",until:/^\d{4}-\d\d-\d\d$/.test(e.until)?e.until:""})).filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date));render()});
+sync("events",d=>{E=d.map(e=>({id:e.id,date:String(e.date||""),time:String(e.time||""),title:String(e.title||""),type:T.includes(e.type)?e.type:"other",by:String(e.by||""),col:PAL.some(p=>p[0]===e.col)?e.col:"",rep:["d","w","m","y"].includes(e.rep)?e.rep:"",until:/^\d{4}-\d\d-\d\d$/.test(e.until)?e.until:"",end:/^\d{4}-\d\d-\d\d$/.test(e.end)?e.end:""})).filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date));render()});
 </script></body></html>

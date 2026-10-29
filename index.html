@@ -38,7 +38,7 @@ const h=hols(now.getFullYear())[td],w=now.getDay()%6==0,ch=$("dk");
 ch.textContent=h?"Státní svátek: "+h:w?"Víkend":"Pracovní den";ch.className="chip"+(h?" hol":w?" wk":"");
 $("rc").onclick=e=>{e.preventDefault();logout().then(()=>location.reload())};
 const on=(E,s)=>E.filter(e=>occ(e,s));
-sync("events",d=>{const E=d.filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date)&&e.title).map(e=>({date:e.date,type:e.type,title:String(e.title),time:String(e.time||""),rep:e.rep||"",until:/^\d{4}-\d\d-\d\d$/.test(e.until)?e.until:""}));
+sync("events",d=>{const E=d.filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date)&&e.title).map(e=>({date:e.date,type:e.type,title:String(e.title),time:String(e.time||""),rep:e.rep||"",until:/^\d{4}-\d\d-\d\d$/.test(e.until)?e.until:"",end:/^\d{4}-\d\d-\d\d$/.test(e.end)?e.end:""}));
 const t=on(E,td),n=[];
 for(let k=1;k<=30&&n.length<2;k++){const dd=new Date(now.getFullYear(),now.getMonth(),now.getDate()+k);on(E,ymd(dd)).forEach(e=>{if(n.length<2)n.push(dd.toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"})+" "+e.title)})}
 $("cs").textContent=t.length?"Dnes: "+t.map(e=>(e.time?e.time+" ":"")+e.title).join(", "):"Dnes nic naplánováno";
