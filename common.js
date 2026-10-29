@@ -18,6 +18,10 @@ document.body.append(ov);
 g("lf").onsubmit=e=>{e.preventDefault();signInWithEmailAndPassword(auth,g("le").value,g("lp").value).catch(()=>g("lm").textContent="Přihlášení se nepovedlo. Zkontroluj e-mail a heslo.")};
 const authed=new Promise(res=>onAuthStateChanged(auth,u=>{if(u){ov.remove();res(u)}else{if(!ov.isConnected)document.body.append(ov);g("lf").style.visibility="visible"}}));
 export const logout=()=>signOut(auth);
+export const me=authed.then(u=>u.uid);
+export const dn=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10))/864e5;
+export function occ(e,s){if(s<e.date||(e.until&&s>e.until))return false;const r=e.rep||(e.type==="bday"||e.type==="nday"?"y":"");
+if(!r)return s===e.date;if(r==="d")return true;if(r==="w")return(dn(s)-dn(e.date))%7===0;if(r==="m")return s.slice(8)===e.date.slice(8);return s.slice(5)===e.date.slice(5)}
 export const sync=(n,cb)=>authed.then(()=>onSnapshot(collection(fs,"spaces","main",n),s=>cb(s.docs.map(d=>({...d.data(),id:d.id}))),()=>msg("Data se nepodařilo načíst. Zkontroluj přihlášení a pravidla databáze.")));
 export const put=(n,o)=>authed.then(()=>{const{id,...b}=o;return setDoc(doc(fs,"spaces","main",n,id),b)}).catch(()=>msg("Uložení se nepovedlo."));
 export const del=(n,id)=>authed.then(()=>deleteDoc(doc(fs,"spaces","main",n,id))).catch(()=>msg("Smazání se nepovedlo."));
