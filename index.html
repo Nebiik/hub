@@ -1,16 +1,44 @@
 <!DOCTYPE html>
-<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HUB"><title>HUB</title><link rel="stylesheet" href="style.css">
-<style>.t{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.t a,.t div{display:block;text-decoration:none;color:var(--tx);background:var(--card);border:1px solid var(--br);border-radius:14px;padding:20px 14px;text-align:center;font-size:17px;font-weight:600}.t span{display:block;font-size:30px;margin-bottom:6px}.t .s{opacity:.45;border-style:dashed}.t small{display:block;font-weight:400;color:var(--mut);font-size:12px}</style></head>
-<body><div class="wrap"><header><h1>HUB</h1></header>
-<div class="t">
-<a href="kalendar.html"><span>🗓️</span>Kalendář</a>
-<a href="ukoly.html"><span>✅</span>Úkoly</a>
-<div class="s"><span>💰</span>Finance<small>brzy</small></div>
-<div class="s"><span>🏋️</span>Cvičení<small>brzy</small></div>
-<div class="s"><span>💼</span>Práce<small>brzy</small></div>
-</div>
-<p class="empty" style="margin-top:24px"><a href="#" id="rc" style="color:var(--mut)">Změnit společný kód</a></p></div>
-<script>
-try{if(location.hash.length>1)localStorage.setItem("hubcode",location.hash.slice(1))}catch(e){}
-document.getElementById("rc").onclick=function(e){e.preventDefault();try{localStorage.removeItem("hubcode")}catch(x){}location.hash="";location.reload()};
+<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="HUB"><meta name="theme-color" content="#3a4fd7"><title>HUB</title><link rel="stylesheet" href="style.css">
+<style>
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:10px 0 24px}
+.big{font:700 clamp(32px,9vw,52px)/1.02 var(--f);letter-spacing:-.025em;margin-bottom:12px}
+.chip{display:inline-block;padding:5px 14px;border-radius:999px;font-size:14px;font-weight:600;background:var(--hl);color:var(--ac)}
+.chip.hol{background:var(--red);color:#fff}.chip.wk{background:var(--br);color:var(--mut)}
+#rc{color:var(--mut);font-size:13px;text-decoration:none;white-space:nowrap}
+.bento{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.tile{display:flex;flex-direction:column;gap:4px;min-height:150px;padding:18px;border-radius:24px;color:#fff;text-decoration:none}
+.tile h2{font:700 24px/1.1 var(--f);margin:auto 0 2px}
+.tile p{margin:0;font-size:15px}.tile .sub{opacity:.78;font-size:13px}
+.ic{font-size:36px;line-height:1}
+.tile:active{transform:scale(.98)}
+.cal{grid-column:1/-1;background:#3a4fd7;min-height:200px}.tsk{background:#0c8a7a}
+.soon{background:transparent;color:var(--mut);border:1.5px dashed var(--br)}
+@media(min-width:720px){.bento{grid-template-columns:repeat(6,1fr)}.cal{grid-column:span 4}.tsk,.soon{grid-column:span 2}}
+</style></head>
+<body><div class="wrap">
+<div class="top"><div><div class="big" id="dt"></div><span class="chip" id="dk"></span></div><a href="#" id="rc">Odhlásit se</a></div>
+<div class="bento">
+<a class="tile cal" href="kalendar.html"><span class="ic">🗓️</span><h2>Kalendář</h2><p id="cs">Načítám…</p><p class="sub" id="cn"></p></a>
+<a class="tile tsk" href="ukoly.html"><span class="ic">✅</span><h2>Úkoly</h2><p id="ts">Načítám…</p><p class="sub" id="tn"></p></a>
+<div class="tile soon"><span class="ic">💰</span><h2>Finance</h2><p class="sub">Brzy</p></div>
+<div class="tile soon"><span class="ic">🏋️</span><h2>Cvičení</h2><p class="sub">Brzy</p></div>
+<div class="tile soon"><span class="ic">💼</span><h2>Práce</h2><p class="sub">Brzy</p></div>
+</div></div>
+<script type="module">
+import{sync,hols,ymd,logout}from"./common.js";
+const $=i=>document.getElementById(i),now=new Date(),td=ymd(now);
+const dt=now.toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"long"});
+$("dt").textContent=dt[0].toUpperCase()+dt.slice(1);
+const h=hols(now.getFullYear())[td],w=now.getDay()%6==0,ch=$("dk");
+ch.textContent=h?"Státní svátek: "+h:w?"Víkend":"Pracovní den";ch.className="chip"+(h?" hol":w?" wk":"");
+$("rc").onclick=e=>{e.preventDefault();logout().then(()=>location.reload())};
+const on=(E,s)=>E.filter(e=>e.date===s||(["bday","nday"].includes(e.type)&&e.date.slice(5)===s.slice(5)&&e.date<=s));
+sync("events",d=>{const E=d.filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date)&&e.title).map(e=>({date:e.date,type:e.type,title:String(e.title),time:String(e.time||"")}));
+const t=on(E,td),n=[];
+for(let k=1;k<=30&&n.length<2;k++){const dd=new Date(now.getFullYear(),now.getMonth(),now.getDate()+k);on(E,ymd(dd)).forEach(e=>{if(n.length<2)n.push(dd.toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"})+" "+e.title)})}
+$("cs").textContent=t.length?"Dnes: "+t.map(e=>(e.time?e.time+" ":"")+e.title).join(", "):"Dnes nic naplánováno";
+$("cn").textContent=n.length?"Příště: "+n.join(", "):""});
+sync("tasks",d=>{const o=d.filter(t=>t.done!==true),od=o.filter(t=>t.due&&t.due<td).length;
+$("ts").textContent=o.length?o.length+" otevřených":"Vše hotovo";$("tn").textContent=od?od+" po termínu":""});
 </script></body></html>

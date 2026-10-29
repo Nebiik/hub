@@ -1,22 +1,26 @@
-:root{--bg:#f6f5f1;--card:#fff;--tx:#1d1d1b;--mut:#6b6a64;--br:#e3e1da;--ac:#2f6fed;--hl:#e8f0fe;--m:#2f6fed;--b:#e0567a;--o:#2a9d6f;--n:#e0a22f;--red:#d64545}
-@media(prefers-color-scheme:dark){:root{--bg:#151518;--card:#1f1f23;--tx:#ececea;--mut:#9a9992;--br:#34343a;--ac:#6b9bff;--hl:#25314d;--m:#6b9bff;--b:#ff7fa0;--o:#4cc795}}
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&display=swap");
+:root{--bg:#eef1f6;--card:#fff;--tx:#121c2b;--mut:#5d6b80;--br:#dbe1ea;--ac:#3a4fd7;--hl:#e6eaff;--m:#3a4fd7;--b:#e0567a;--o:#0f9d8a;--n:#e8a317;--red:#d9453b;--f:"Bricolage Grotesque",system-ui,sans-serif}
+@media(prefers-color-scheme:dark){:root{--bg:#0d131c;--card:#161e2a;--tx:#e8edf5;--mut:#8e9bb0;--br:#27313f;--ac:#8b9cff;--hl:#212c4d;--m:#8b9cff}.add{color:#0d131c!important}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 .wrap{max-width:980px;margin:0 auto;padding:16px}
-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-header a{color:var(--ac);text-decoration:none}
-h1{font-size:22px;margin:0}
-.card{background:var(--card);border:1px solid var(--br);border-radius:14px;padding:14px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+header a{color:var(--tx);text-decoration:none;font-size:14px;font-weight:600;padding:6px 14px;border-radius:999px;background:var(--card);border:1px solid var(--br)}
+h1{font:700 26px/1.1 var(--f);margin:0;letter-spacing:-.01em}
+h2,h3{font-family:var(--f)}
+.card{background:var(--card);border:1px solid var(--br);border-radius:20px;padding:16px}
 button,input,select{font:inherit;color:var(--tx)}
-.nb{border:1px solid var(--br);background:var(--card);border-radius:8px;padding:4px 10px;cursor:pointer}
-form{display:grid;gap:8px;margin-top:12px}
-form input,form select{width:100%;padding:8px;border:1px solid var(--br);border-radius:8px;background:var(--bg)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.nb{border:1px solid var(--br);background:var(--card);border-radius:12px;padding:6px 12px;cursor:pointer}
+form{display:grid;gap:8px;margin-top:14px}
+form input,form select{width:100%;padding:10px 12px;border:1px solid var(--br);border-radius:12px;background:var(--bg)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.add{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:9px;cursor:pointer;font-weight:600}
-.ev{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--br);font-size:14px}
+.add{background:var(--ac);color:#fff;border:0;border-radius:12px;padding:11px;cursor:pointer;font-weight:700}
+.add:active{transform:scale(.98)}
+.ev{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--br);font-size:14px}
 .ev:first-child{border-top:0}
-.x{border:0;background:none;color:var(--mut);cursor:pointer;font-size:16px}
-.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.x{border:0;background:none;color:var(--mut);cursor:pointer;font-size:17px;padding:2px 6px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
 .meet{background:var(--m)}.bday{background:var(--b)}.other{background:var(--o)}.nday{background:var(--n)}
 .empty{color:var(--mut);font-size:14px}
 #msg{color:var(--red);font-weight:600;font-size:14px;margin-bottom:8px}
