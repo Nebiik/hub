@@ -1,25 +1,57 @@
 <!DOCTYPE html>
-<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Úkoly</title><link rel="stylesheet" href="style.css"></head>
+<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Úkoly</title><link rel="stylesheet" href="style.css">
+<style>
+[hidden]{display:none!important}
+.stack{display:grid;gap:14px}
+.hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.hd h2{font-size:18px;margin:0}.hd span{color:var(--mut);font-size:14px}
+.tk{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--br);font-size:16px}
+.tk:first-child{border-top:0}
+.tk input{width:20px;height:20px;accent-color:var(--ac);flex:none;margin:0}
+.tk .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.tk.dn .t{text-decoration:line-through;opacity:.5}
+.pill{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--bg);color:var(--mut);white-space:nowrap;border:1px solid var(--br)}
+.pill.od{background:var(--red);border-color:var(--red);color:#fff}
+.sec{font-size:13px;color:var(--mut);margin:16px 0 2px;display:flex;justify-content:space-between;align-items:center}
+.nf{display:flex;gap:8px}
+.nf input{flex:1;min-width:0}
+.nf button{width:46px;font-size:24px;padding:0;line-height:1}
+.opt{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
+.opt input{width:auto;padding:6px 8px;font-size:14px}
+</style></head>
 <body><div class="wrap" style="max-width:640px">
 <header><a href="index.html">‹ HUB</a><h1>Úkoly</h1></header><div id="msg"></div>
-<div class="card"><div id="list"></div>
-<form id="f"><input id="title" placeholder="Nový úkol" required maxlength="100"><div class="row"><input id="due" type="date"><button class="add" type="submit">Přidat úkol</button></div></form></div>
-</div>
+<div class="stack">
+<section class="card">
+<div class="hd"><h2>K udělání</h2><span id="cnt"></span></div>
+<div id="open"></div>
+<div class="sec" id="dsec" hidden><span id="dcnt"></span><button class="nb" id="clr" type="button" style="font-size:12px;padding:3px 10px">Smazat hotové</button></div>
+<div id="done"></div>
+</section>
+<section class="card">
+<div class="hd"><h2>Nový úkol</h2></div>
+<form id="f" style="margin:0"><div class="nf"><input id="title" type="text" placeholder="Co je potřeba udělat?" required maxlength="100"><button class="add" type="submit" aria-label="Přidat úkol">+</button></div>
+<label class="opt">Termín (nepovinný) <input id="due" type="date"></label></form>
+</section>
+</div></div>
 <script type="module">
 import{sync,put,del,ymd}from"./common.js";
 const $=i=>document.getElementById(i);
 let K=[];
 const mk=(t,c,x)=>{const n=document.createElement(t);n.className=c;if(x!=null)n.textContent=x;return n};
-function render(){const l=$("list");l.innerHTML="";const td=ymd(new Date());
-K.sort((a,b)=>(a.done-b.done)||((a.due||"9")<(b.due||"9")?-1:1));
-if(!K.length){l.innerHTML='<div class="empty">Žádné úkoly.</div>';return}
-K.forEach(t=>{const d=mk("div","ev"),c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.onchange=()=>put("tasks",{...t,done:c.checked});
-const s=mk("span","",t.title);s.style.flex=1;if(t.done){s.style.textDecoration="line-through";s.style.opacity=.5}
-d.append(c,s);
-if(t.due){const w=mk("span","empty",new Date(t.due+"T12:00:00").toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"}));if(!t.done&&t.due<td)w.style.color="var(--red)";d.append(w)}
-const x=mk("button","x","×");x.title="Smazat";x.onclick=()=>del("tasks",t.id);d.append(x);l.append(d)})}
+const dm=s=>new Date(s+"T12:00:00").toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"});
+function row(t,td){const d=mk("div","tk"+(t.done?" dn":"")),c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.setAttribute("aria-label","Hotovo");c.onchange=()=>put("tasks",{...t,done:c.checked});
+d.append(c,mk("span","t",t.title));
+if(t.due)d.append(mk("span","pill"+(!t.done&&t.due<td?" od":""),dm(t.due)));
+const x=mk("button","x","×");x.title="Smazat";x.onclick=()=>del("tasks",t.id);d.append(x);return d}
+function render(){const td=ymd(new Date()),o=K.filter(t=>!t.done).sort((a,b)=>(a.due||"9")<(b.due||"9")?-1:1),dn=K.filter(t=>t.done);
+$("cnt").textContent=o.length?o.length+" otevřených":"";
+const l=$("open");l.innerHTML="";if(o.length)o.forEach(t=>l.append(row(t,td)));else l.innerHTML='<div class="empty" style="padding:8px 0">Vše hotovo, nic nečeká. 🎉</div>';
+$("dsec").hidden=!dn.length;$("dcnt").textContent="Hotovo ("+dn.length+")";
+const q=$("done");q.innerHTML="";dn.forEach(t=>q.append(row(t,td)))}
+$("clr").onclick=()=>K.filter(t=>t.done).forEach(t=>del("tasks",t.id));
 $("f").onsubmit=e=>{e.preventDefault();const t=$("title").value.trim();if(!t)return;
-put("tasks",{id:Date.now()+""+Math.floor(Math.random()*1000),title:t,due:$("due").value,done:false});$("f").reset()};
+put("tasks",{id:Date.now()+""+Math.floor(Math.random()*1000),title:t,due:$("due").value,done:false});$("f").reset();$("title").focus()};
 render();
 sync("tasks",d=>{K=d.map(t=>({id:t.id,title:String(t.title||""),due:/^\d{4}-\d\d-\d\d$/.test(t.due)?t.due:"",done:t.done===true}));render()});
 </script></body></html>
