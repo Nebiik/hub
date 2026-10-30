@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Nákup</title><link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#3a4fd7">
+<style>
+[hidden]{display:none!important}
+.stack{display:grid;gap:14px}
+.hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.hd h2{font-size:18px;margin:0}.hd span{color:var(--mut);font-size:14px}
+.tk{display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--br);font-size:17px}
+.tk:first-child{border-top:0}
+.tk input{width:24px;height:24px;accent-color:var(--ac);flex:none;margin:0}
+.tk .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.tk.dn .t{text-decoration:line-through;opacity:.5}
+.sec{font-size:13px;color:var(--mut);margin:16px 0 2px;display:flex;justify-content:space-between;align-items:center}
+.nf{display:flex;gap:8px}
+.nf input{flex:1;min-width:0}
+.nf button{width:46px;padding:0;display:flex;align-items:center;justify-content:center}
+.hint{color:var(--mut);font-size:13px;margin-top:8px}
+</style></head>
+<body><div class="wrap" style="max-width:640px">
+<header><a href="index.html">‹ HUB</a><h1>Nákup</h1></header><div id="msg"></div>
+<div class="stack">
+<section class="card">
+<div class="hd"><h2>Koupit</h2><span id="cnt"></span></div>
+<div id="open"></div>
+<div class="sec" id="dsec" hidden><span id="dcnt"></span><button class="nb" id="clr" type="button" style="font-size:12px;padding:3px 10px">Smazat koupené</button></div>
+<div id="done"></div>
+</section>
+<section class="card">
+<div class="hd"><h2>Přidat</h2></div>
+<form id="f" style="margin:0"><div class="nf"><input id="title" type="text" list="dl" placeholder="Co koupit?" required maxlength="100" autocomplete="off"><button class="add" type="submit" aria-label="Přidat"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3.5v13M3.5 10h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg></button></div>
+<datalist id="dl"></datalist></form>
+<div class="hint">Víc věcí najednou odděl čárkou, třeba „mléko, chleba, máslo“.</div>
+</section>
+</div></div>
+<script type="module">
+import{sync,put,del}from"./common.js";
+const $=i=>document.getElementById(i);
+let K=[];
+const mk=(t,c,x)=>{const n=document.createElement(t);n.className=c;if(x!=null)n.textContent=x;return n};
+const ts=t=>Number(String(t.id).slice(0,13))||0;
+function row(t){const d=mk("div","tk"+(t.done?" dn":"")),c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.setAttribute("aria-label",t.done?"Vrátit na seznam":"Koupeno");c.onchange=()=>put("shop",{...t,done:c.checked});
+d.append(c,mk("span","t",t.title));
+const x=mk("button","x","×");x.title="Smazat";x.onclick=()=>del("shop",t.id);d.append(x);return d}
+function render(){const o=K.filter(t=>!t.done).sort((a,b)=>ts(a)-ts(b)),dn=K.filter(t=>t.done).sort((a,b)=>ts(b)-ts(a));
+$("cnt").textContent=o.length?o.length+" položek":"";
+const l=$("open");l.innerHTML="";if(o.length)o.forEach(t=>l.append(row(t)));else l.innerHTML='<div class="empty" style="padding:8px 0">Nic není potřeba. 🎉</div>';
+$("dsec").hidden=!dn.length;$("dcnt").textContent="Koupeno ("+dn.length+")";
+const q=$("done");q.innerHTML="";dn.forEach(t=>q.append(row(t)));
+$("dl").innerHTML="";[...new Set(K.map(t=>t.title.toLowerCase()))].sort().forEach(v=>{const o=document.createElement("option");o.value=v;$("dl").append(o)})}
+$("clr").onclick=()=>K.filter(t=>t.done).forEach(t=>del("shop",t.id));
+$("f").onsubmit=e=>{e.preventDefault();const p=$("title").value.split(/[,;]/).map(s=>s.trim()).filter(Boolean).slice(0,30);if(!p.length)return;
+const b=Date.now();p.forEach((title,i)=>put("shop",{id:(b+i)+""+Math.floor(100+Math.random()*900),title:title.slice(0,100),done:false}));$("f").reset();$("title").focus()};
+render();
+sync("shop",d=>{K=d.map(t=>({id:t.id,title:String(t.title||""),done:t.done===true})).filter(t=>t.title);render()});
+</script></body></html>

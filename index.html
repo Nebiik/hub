@@ -15,14 +15,17 @@
 .ic{font-size:36px;line-height:1}
 .tile:active{transform:scale(.98)}
 .cal{grid-column:1/-1;background:#3a4fd7;min-height:200px}.tsk{background:#0c8a7a}
+.shp{background:#c25a16}
 .soon{background:transparent;color:var(--mut);border:1.5px dashed var(--br)}
-@media(min-width:720px){.bento{grid-template-columns:repeat(6,1fr)}.cal{grid-column:span 4}.tsk,.soon{grid-column:span 2}}
+.soon:last-child{grid-column:1/-1;min-height:96px}
+@media(min-width:720px){.bento{grid-template-columns:repeat(6,1fr)}.cal{grid-column:span 4}.tsk,.soon,.shp{grid-column:span 2}}
 </style></head>
 <body><div class="wrap">
 <div class="top"><div><div class="big" id="dt"></div><div class="nm" id="nm"></div><span class="chip" id="dk"></span></div><a href="#" id="rc">Odhlásit se</a></div>
 <div class="bento">
 <a class="tile cal" href="kalendar.html"><span class="ic">🗓️</span><h2>Kalendář</h2><p id="cs">Načítám…</p><p class="sub" id="cn"></p></a>
 <a class="tile tsk" href="ukoly.html"><span class="ic">✅</span><h2>Úkoly</h2><p id="ts">Načítám…</p><p class="sub" id="tn"></p></a>
+<a class="tile shp" href="nakup.html"><span class="ic">🛒</span><h2>Nákup</h2><p id="ns">Načítám…</p><p class="sub" id="nn"></p></a>
 <div class="tile soon"><span class="ic">💰</span><h2>Finance</h2><p class="sub">Brzy</p></div>
 <div class="tile soon"><span class="ic">🏋️</span><h2>Cvičení</h2><p class="sub">Brzy</p></div>
 <div class="tile soon"><span class="ic">💼</span><h2>Práce</h2><p class="sub">Brzy</p></div>
@@ -43,6 +46,7 @@ const t=on(E,td),n=[];
 for(let k=1;k<=30&&n.length<2;k++){const dd=new Date(now.getFullYear(),now.getMonth(),now.getDate()+k);on(E,ymd(dd)).forEach(e=>{if(n.length<2)n.push(dd.toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"})+" "+e.title)})}
 $("cs").textContent=t.length?"Dnes: "+t.map(e=>(e.time?e.time+" ":"")+e.title).join(", "):"Dnes nic naplánováno";
 $("cn").textContent=n.length?"Příště: "+n.join(", "):""});
+sync("shop",d=>{const o=d.filter(t=>t.done!==true&&t.title);$("ns").textContent=o.length?o.length+" k nákupu":"Nic není potřeba";$("nn").textContent=o.slice(0,3).map(t=>String(t.title)).join(", ")});
 sync("tasks",d=>{const o=d.filter(t=>t.done!==true),od=o.filter(t=>t.due&&t.due<td).length;
 $("ts").textContent=o.length?o.length+" otevřených":"Vše hotovo";$("tn").textContent=od?od+" po termínu":""});
 </script></body></html>
