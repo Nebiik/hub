@@ -27,6 +27,9 @@ export function occ(e,s){const L=e.end&&e.end>e.date?Math.min(366,dn(e.end)-dn(e
 export const sync=(n,cb)=>authed.then(()=>onSnapshot(collection(fs,"spaces","main",n),s=>cb(s.docs.map(d=>({...d.data(),id:d.id}))),()=>msg("Data se nepodařilo načíst. Zkontroluj přihlášení a pravidla databáze.")));
 export const put=(n,o)=>authed.then(()=>{const{id,...b}=o;return setDoc(doc(fs,"spaces","main",n,id),b)}).catch(()=>msg("Uložení se nepovedlo."));
 export const del=(n,id)=>authed.then(()=>deleteDoc(doc(fs,"spaces","main",n,id))).catch(()=>msg("Smazání se nepovedlo."));
+export const psync=(n,cb)=>authed.then(u=>onSnapshot(collection(fs,"users",u.uid,n),s=>cb(s.docs.map(d=>({...d.data(),id:d.id}))),()=>msg("Data se nepodařilo načíst. Zkontroluj přihlášení a pravidla databáze.")));
+export const pput=(n,o)=>authed.then(u=>{const{id,...b}=o;return setDoc(doc(fs,"users",u.uid,n,id),b)}).catch(()=>msg("Uložení se nepovedlo."));
+export const pdel=(n,id)=>authed.then(u=>deleteDoc(doc(fs,"users",u.uid,n,id))).catch(()=>msg("Smazání se nepovedlo."));
 function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da)}
 const hc={};
 export function hols(y){if(hc[y])return hc[y];const h={},E=easter(y),add=(m,d,n)=>h[y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")]=n;
