@@ -1,7 +1,7 @@
 name: Synchronizace Google Kalendáře
 on:
   schedule:
-    - cron: "17 4 * * *"
+    - cron: "17 5,17 * * *"
   workflow_dispatch:
 jobs:
   sync:
