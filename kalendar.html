@@ -2,7 +2,7 @@
 <html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Kalendář</title><link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#3a4fd7">
 <style>
-.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}@media(max-width:720px){.grid{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start}@media(max-width:720px){.grid{grid-template-columns:1fr}}
 .bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.bar h2{font-size:17px;margin:0;text-transform:capitalize}
 .dow,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.dow div{text-align:center;font-size:12px;color:var(--mut)}
 .d{aspect-ratio:1;border:1px solid var(--br);border-radius:10px;background:transparent;padding:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:14px}
@@ -14,6 +14,7 @@ h3{font-size:15px;margin:0 0 8px}.w{color:var(--mut);font-size:13px;min-width:70
 #cols{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--br);cursor:pointer;padding:0}.sw.none{background:var(--bg);color:var(--mut);font-size:16px;line-height:1}.sw.on{outline:2px solid var(--tx);outline-offset:2px}.tl input[type=text]{padding:8px 12px;border:1px solid var(--br);border-radius:12px;background:var(--bg);width:100%}
 details.card summary{cursor:pointer;color:var(--mut);font-size:14px}details.card[open] summary{margin-bottom:12px}.tl{display:grid;gap:10px}.tl select{padding:8px;border:1px solid var(--br);border-radius:12px;background:var(--bg)}.opt{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
 .opt input{width:auto;padding:6px 8px;font-size:14px}
+#upd summary{color:var(--tx);font:700 15px var(--f)}#upd summary span{color:var(--mut);font-weight:500}
 </style></head>
 <body><div class="wrap">
 <header><a href="index.html">‹ HUB</a><h1>Kalendář</h1></header><div id="msg"></div>
@@ -33,7 +34,7 @@ details.card summary{cursor:pointer;color:var(--mut);font-size:14px}details.card
 <div class="opt">Barva <div id="cols"></div></div>
 <button class="add" type="submit" id="sb">Přidat událost</button><button class="nb" type="button" id="cancel" hidden>Zrušit úpravu</button></form></div>
 <div style="height:16px"></div>
-<div class="card"><h3>Nejbližších 30 dní</h3><div id="up"></div></div>
+<details class="card" id="upd"><summary>Nejbližších 30 dní <span id="upn"></span></summary><div id="up" style="max-height:340px;overflow:auto"></div></details>
 </aside></div>
 <details class="card" style="margin-top:16px"><summary>Nástroje</summary>
 <div class="tl"><b>Import z kalendáře (.ics)</b>
@@ -71,6 +72,7 @@ const hn=hol(sel),wd=new Date(sel+"T12:00:00").getDay();$("hn").textContent=hn?"
 const l=$("list");l.innerHTML="";const es=evOn(sel);if(es.length)es.forEach(e=>l.append(item(e,sel)));else l.innerHTML='<div class="empty">Nic naplánováno.</div>';
 const u=$("up");u.innerHTML="";let n=0;for(let k=0;k<30;k++){const s=ymd(new Date(today.getFullYear(),today.getMonth(),today.getDate()+k));evOn(s).forEach(e=>{u.append(item(e,s,1));n++})}
 if(!n)u.innerHTML='<div class="empty">Zatím nic.</div>';
+$("upn").textContent=n?"("+n+")":"";
 if(!editId)$("date").value=sel}
 function start(e){editId=e.id;if(e.src==="gcal")msg("Událost se synchronizuje z Google Kalendáře: změna názvu, data a času se při další synchronizaci přepíše. Barvu a „Zadal“ můžeš měnit.");$("title").value=e.title;$("time").value=e.time||"";$("type").value=e.type;$("date").value=e.date;$("end").value=e.end||"";$("rep").value=e.rep||"";$("by").value=e.by||$("by").value;setCol(e.col||"");$("sb").textContent="Uložit změny";$("cancel").hidden=false;$("title").focus()}
 function stop(){editId=null;$("f").reset();$("by").value=lastBy();setCol("");$("sb").textContent="Přidat událost";$("cancel").hidden=true;render()}
