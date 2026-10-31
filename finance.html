@@ -2,76 +2,87 @@
 <html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Finance</title><link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#3a4fd7">
 <style>
-.stack{display:grid;gap:14px}
+.stack{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.stack>*{min-width:0}
 .hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
 .hd h2{font-size:18px;margin:0}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.lb{display:grid;gap:4px;font-size:13px;color:var(--mut)}
-.lb input,.lb select{width:100%;padding:10px 12px;border:1px solid var(--br);border-radius:12px;background:var(--bg);font-size:16px}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.lb{display:grid;gap:4px;font-size:13px;color:var(--mut);min-width:0}
+.lb input,.lb select{width:100%;min-width:0;padding:10px 12px;border:1px solid var(--br);border-radius:12px;background:var(--bg);font-size:16px}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .tab{border:1px solid var(--br);background:transparent;border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;color:var(--mut)}
 .tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
 @media(prefers-color-scheme:dark){.tab.on{color:#0d131c}}
-.sc{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
-th{font-weight:600;text-align:right;padding:6px 6px;color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-weight:600;text-align:right;padding:6px 4px;color:var(--mut)}
 th:first-child,tbody th{text-align:left;color:var(--tx)}
-td{text-align:right;padding:8px 6px;border-top:1px solid var(--br);white-space:nowrap}
-td b{display:block;font-weight:600}td small{display:block;opacity:.8}
+tbody th small{display:block;font-weight:400;color:var(--mut);font-size:12px}
+td{text-align:right;padding:8px 4px;border-top:1px solid var(--br);white-space:nowrap}
+tbody th{border-top:1px solid var(--br);padding:8px 4px}
+td b{display:block;font-weight:600}td small{display:block;opacity:.8;font-size:11px}
+@media(max-width:520px){td small{display:none}table{font-size:12px}}
 .up{color:#2a9d6f}.dn{color:#e5484d}
 .hint{color:var(--mut);font-size:12px;margin-top:8px}
 .lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:6px}.lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
 #ch svg{width:100%;height:auto;display:block}
 details summary{cursor:pointer;font:700 15px var(--f)}
 details[open] summary{margin-bottom:8px}
-.hs{max-height:300px;overflow:auto}
+.hs{max-height:260px;overflow:auto}
 .hs .ev{cursor:pointer}
-.hide #sum,.hide #ch,.hide #hs,.hide .num{filter:blur(8px)}
-.eye{margin-left:auto;font-size:13px;padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--br);cursor:pointer}
+.hide #sum,.hide #ch,.hide .hs,.hide .num{filter:blur(8px)}
+.eye{margin-left:auto;font-size:13px;padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--br);cursor:pointer;white-space:nowrap}
 </style></head>
 <body><div class="wrap" style="max-width:760px">
 <header><a href="index.html">‹ HUB</a><h1>Finance</h1><button class="eye" id="eye" type="button">Skrýt částky</button></header><div id="msg"></div>
 <div class="stack">
 <section class="card">
-<div class="hd"><h2>Zápis</h2></div>
+<div class="hd"><h2>Zápis hodnoty</h2></div>
 <form id="f" style="margin:0">
 <div class="g2"><label class="lb">Datum<input id="d" type="date" required></label><span></span></div>
 <div class="g2"><label class="lb">Krypto (Kč)<input class="num" id="c" inputmode="decimal" placeholder="0" required autocomplete="off"></label><label class="lb">Akcie (Kč)<input class="num" id="s" inputmode="decimal" placeholder="0" required autocomplete="off"></label></div>
-<div class="g2"><label class="lb">Vklad / výběr (nepovinné, mínus = výběr)<input class="num" id="dv" inputmode="decimal" placeholder="0" autocomplete="off"></label><label class="lb">Kam<select id="dw"><option value="c">Krypto</option><option value="s">Akcie</option></select></label></div>
 <button class="add" type="submit" id="sb">Uložit</button>
 </form></section>
-<section class="card"><div class="hd"><h2>Přehled</h2></div><div class="sc" id="sum"></div></section>
+<section class="card"><div class="hd"><h2>Přehled</h2></div><div id="sum"></div></section>
 <section class="card"><div class="hd"><h2>Vývoj</h2></div>
 <div class="tabs" id="rg"><button class="tab" data-v="week">Týden</button><button class="tab on" data-v="month">Měsíc</button><button class="tab" data-v="year">Rok</button><button class="tab" data-v="all">Vše</button></div>
 <div class="tabs" id="md"><button class="tab on" data-v="val">Hodnota</button><button class="tab" data-v="pnl">Zisk / ztráta bez vkladů</button></div>
 <div id="ch"></div>
 <div class="lg"><span><i style="background:var(--ac)"></i>Celkem</span><span><i style="background:#f08a24"></i>Krypto</span><span><i style="background:#0c8a7a"></i>Akcie</span></div></section>
-<details class="card"><summary>Záznamy</summary><div class="hs" id="hs"></div></details>
+<details class="card"><summary>Vklad nebo výběr</summary>
+<form id="g" style="margin:0">
+<div class="g2"><label class="lb">Datum<input id="gd" type="date" required></label><label class="lb">Částka (Kč)<input class="num" id="ga" inputmode="decimal" placeholder="0" required autocomplete="off"></label></div>
+<div class="g2"><label class="lb">Co<select id="gt"><option value="in">Vklad</option><option value="out">Výběr</option></select></label><label class="lb">Kam<select id="gw"><option value="c">Krypto</option><option value="s">Akcie</option></select></label></div>
+<button class="add" type="submit">Uložit vklad / výběr</button>
+</form>
+<div class="hs" id="dl" style="margin-top:10px"></div></details>
+<details class="card"><summary>Záznamy hodnot</summary><div class="hs" id="hs"></div></details>
 </div></div>
 <script type="module">
 import{psync,pput,pdel,ymd}from"./common.js";
 const $=i=>document.getElementById(i);
-let R=[],rng="month",mode="val",init=false;
+let R=[],Fn=[],rng="month",mode="val",init=false;
 const nf=new Intl.NumberFormat("cs-CZ",{maximumFractionDigits:0}),kc=v=>nf.format(Math.round(v))+" Kč",pc=v=>(v>=0?"+":"−")+Math.abs(v).toFixed(1).replace(".",",")+" %";
 const dn=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10))/864e5,ad=(s,k)=>new Date((dn(s)+k)*864e5).toISOString().slice(0,10);
 const dm=s=>new Date(s+"T12:00:00").toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric",year:"2-digit"});
-const val=(x,k)=>k==="t"?x.c+x.s:x[k],dep=(x,k)=>k==="t"?x.dc+x.ds:k==="c"?x.dc:x.ds;
+const val=(x,k)=>k==="t"?x.c+x.s:x[k];
 const num=v=>{const n=parseFloat(String(v).replace(/\s/g,"").replace(",","."));return isNaN(n)?null:n};
+const flows=()=>{const o=[];R.forEach(x=>{if(x.dc)o.push({d:x.id,a:x.dc,to:"c"});if(x.ds)o.push({d:x.id,a:x.ds,to:"s"})});return o.concat(Fn)};
+const dsum=(k,f,t)=>flows().filter(q=>q.d>f&&q.d<=t&&(k==="t"||q.to===k)).reduce((a,q)=>a+q.a,0);
 function md(k,from,to){const A=R.filter(x=>x.id<=to),B=R.filter(x=>x.id<=from);if(!A.length||!B.length)return null;
 const e1=A[A.length-1],e0=B[B.length-1];if(e0.id>=e1.id)return null;
 const t0=e0.id,D=dn(e1.id)-dn(t0);let CF=0,W=0;
-for(const x of R)if(x.id>t0&&x.id<=e1.id){const f=dep(x,k);CF+=f;W+=f*(D-(dn(x.id)-dn(t0)))/D}
+for(const q of flows())if(q.d>t0&&q.d<=e1.id&&(k==="t"||q.to===k)){CF+=q.a;W+=q.a*(D-(dn(q.d)-dn(t0)))/D}
 const ch=val(e1,k)-val(e0,k)-CF,base=val(e0,k)+W;return{ch,p:base>0?ch/base*100:null}}
 function summary(){const el=$("sum");if(!R.length){el.innerHTML='<div class="empty">Zatím žádné záznamy. Zadej první hodnoty nahoře.</div>';return}
 const last=R[R.length-1],pr=[["Týden",7],["Měsíc",30],["Rok",365],["Celkem",0]];
-let h="<table><thead><tr><th></th><th>Hodnota</th>"+pr.map(p=>"<th>"+p[0]+"</th>").join("")+"</tr></thead><tbody>";
-[["t","Celkem"],["c","Krypto"],["s","Akcie"]].forEach(([k,n])=>{h+="<tr><th>"+n+"</th><td>"+kc(val(last,k))+"</td>"+pr.map(([,d])=>{const r=md(k,d?ad(last.id,-d):R[0].id,last.id);return r?'<td class="'+(r.ch>=0?"up":"dn")+'"><b>'+(r.p==null?"–":pc(r.p))+"</b><small>"+(r.ch>=0?"+":"−")+kc(Math.abs(r.ch))+"</small></td>":"<td>–</td>"}).join("")+"</tr>"});
-el.innerHTML=h+"</tbody></table><div class=\"hint\">Poslední záznam "+dm(last.id)+". Výnos v % je očištěný o vklady a výběry (Modified Dietz), pomlčka znamená, že historie ještě nesahá tak daleko.</div>"}
-function chart(){const box=$("ch");const last=R.length?R[R.length-1].id:null,days={week:7,month:30,year:365,all:99999}[rng];
+let h="<table><thead><tr><th></th>"+pr.map(p=>"<th>"+p[0]+"</th>").join("")+"</tr></thead><tbody>";
+[["t","Celkem"],["c","Krypto"],["s","Akcie"]].forEach(([k,n])=>{h+="<tr><th>"+n+"<small>"+kc(val(last,k))+"</small></th>"+pr.map(([,d])=>{const r=md(k,d?ad(last.id,-d):R[0].id,last.id);return r?'<td class="'+(r.ch>=0?"up":"dn")+'"><b>'+(r.p==null?"–":pc(r.p))+"</b><small>"+(r.ch>=0?"+":"−")+kc(Math.abs(r.ch))+"</small></td>":"<td>–</td>"}).join("")+"</tr>"});
+el.innerHTML=h+"</tbody></table><div class=\"hint\">Poslední záznam "+dm(last.id)+". Výnos v % je očištěný o vklady a výběry, pomlčka znamená, že historie ještě nesahá tak daleko.</div>"}
+function chart(){const box=$("ch"),last=R.length?R[R.length-1].id:null,days={week:7,month:30,year:365,all:99999}[rng];
 const pts=last?R.filter(x=>dn(x.id)>=dn(last)-days):[];
 if(pts.length<2){box.innerHTML='<div class="empty">Pro graf zadej aspoň dva záznamy v tomto období.</div>';return}
 const ser=[["t","var(--ac)"],["c","#f08a24"],["s","#0c8a7a"]];
-const data=ser.map(([k])=>{let cum=0;return pts.map((x,i)=>{if(i)cum+=dep(x,k);return{d:x.id,v:mode==="val"?val(x,k):val(x,k)-val(pts[0],k)-cum}})});
+const data=ser.map(([k])=>pts.map(x=>({d:x.id,v:mode==="val"?val(x,k):val(x,k)-val(pts[0],k)-dsum(k,pts[0].id,x.id)})));
 const all=data.flat().map(p=>p.v),mn=Math.min(...all),mx=Math.max(...all),sp=(mx-mn)||1,W=640,H=250,L=8,Rr=8,T=14,Bt=26,x0=dn(pts[0].id),x1=dn(pts[pts.length-1].id);
 const X=d=>L+(dn(d)-x0)/((x1-x0)||1)*(W-L-Rr),Y=v=>T+(1-(v-mn)/sp)*(H-T-Bt);
 let s='<svg viewBox="0 0 '+W+" "+H+'" role="img" aria-label="Graf vývoje">';
@@ -79,23 +90,27 @@ if(mn<0&&mx>0)s+='<line x1="'+L+'" x2="'+(W-Rr)+'" y1="'+Y(0)+'" y2="'+Y(0)+'" s
 data.forEach((a,i)=>{s+='<path d="'+a.map((p,j)=>(j?"L":"M")+X(p.d).toFixed(1)+" "+Y(p.v).toFixed(1)).join("")+'" fill="none" style="stroke:'+ser[i][1]+'" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>';const q=a[a.length-1];s+='<circle cx="'+X(q.d).toFixed(1)+'" cy="'+Y(q.v).toFixed(1)+'" r="3.6" style="fill:'+ser[i][1]+'"/>'});
 s+='<g style="fill:var(--mut)" font-size="11"><text x="'+L+'" y="'+(T-3)+'">'+kc(mx)+'</text><text x="'+L+'" y="'+(H-Bt-4)+'">'+kc(mn)+'</text><text x="'+L+'" y="'+(H-6)+'">'+dm(pts[0].id)+'</text><text x="'+(W-Rr)+'" y="'+(H-6)+'" text-anchor="end">'+dm(pts[pts.length-1].id)+"</text></g></svg>";
 box.innerHTML=s}
-function hist(){const el=$("hs");el.innerHTML="";if(!R.length){el.innerHTML='<div class="empty">Nic zatím.</div>';return}
-[...R].reverse().forEach(x=>{const d=document.createElement("div");d.className="ev";const t=document.createElement("span");t.style.flex="1";t.className="num";t.textContent=dm(x.id)+" · krypto "+kc(x.c)+" · akcie "+kc(x.s)+(x.dc||x.ds?" · vklad "+kc(x.dc+x.ds):"");d.append(t);
-d.onclick=()=>{$("d").value=x.id;fill(x.id);scrollTo({top:0,behavior:"smooth"})};
-const b=document.createElement("button");b.className="x";b.textContent="×";b.title="Smazat";b.onclick=e=>{e.stopPropagation();if(confirm("Smazat záznam z "+dm(x.id)+"?"))pdel("fin",x.id)};d.append(b);el.append(d)})}
+const row=(txt,onclick,onx)=>{const d=document.createElement("div");d.className="ev";const t=document.createElement("span");t.style.flex="1";t.className="num";t.textContent=txt;d.append(t);if(onclick)d.onclick=onclick;const b=document.createElement("button");b.className="x";b.textContent="×";b.title="Smazat";b.onclick=e=>{e.stopPropagation();onx()};d.append(b);return d};
+function hist(){const el=$("hs");el.innerHTML="";if(!R.length)el.innerHTML='<div class="empty">Nic zatím.</div>';
+[...R].reverse().forEach(x=>el.append(row(dm(x.id)+" · krypto "+kc(x.c)+" · akcie "+kc(x.s),()=>{$("d").value=x.id;fill(x.id);scrollTo({top:0,behavior:"smooth"})},()=>{if(confirm("Smazat záznam z "+dm(x.id)+"?"))pdel("fin",x.id)})));
+const dl=$("dl");dl.innerHTML="";if(!Fn.length)dl.innerHTML='<div class="empty">Žádné vklady ani výběry.</div>';
+[...Fn].sort((a,b)=>a.d<b.d?1:-1).forEach(q=>dl.append(row(dm(q.d)+" · "+(q.a>=0?"vklad ":"výběr ")+kc(Math.abs(q.a))+" · "+(q.to==="c"?"krypto":"akcie"),null,()=>{if(confirm("Smazat tento vklad/výběr?"))pdel("findep",q.id)})))}
 function fill(id){const x=R.find(r=>r.id===id),p=x||[...R].reverse().find(r=>r.id<id)||null;
-$("c").value=p?p.c:"";$("s").value=p?p.s:"";$("dv").value=x&&(x.dc||x.ds)?(x.dc||x.ds):"";$("dw").value=x&&x.ds&&!x.dc?"s":"c";$("sb").textContent=x?"Aktualizovat":"Uložit"}
+$("c").value=p?p.c:"";$("s").value=p?p.s:"";$("sb").textContent=x?"Aktualizovat":"Uložit"}
 const render=()=>{summary();chart();hist()};
 $("d").onchange=()=>fill($("d").value);
-$("f").onsubmit=e=>{e.preventDefault();const d=$("d").value,c=num($("c").value),s=num($("s").value),v=num($("dv").value)||0,w=$("dw").value;if(!d||c==null||s==null)return;
-pput("fin",{id:d,c,s,dc:w==="c"?v:0,ds:w==="s"?v:0});$("dv").value=""};
+$("f").onsubmit=e=>{e.preventDefault();const d=$("d").value,c=num($("c").value),s=num($("s").value),x=R.find(r=>r.id===d);if(!d||c==null||s==null)return;
+pput("fin",{id:d,c,s,dc:x?x.dc:0,ds:x?x.ds:0})};
+$("g").onsubmit=e=>{e.preventDefault();const d=$("gd").value,a=num($("ga").value);if(!d||!a||a<=0)return;
+pput("findep",{id:Date.now()+"",date:d,amt:$("gt").value==="in"?a:-a,to:$("gw").value});$("ga").value=""};
 document.querySelectorAll("#rg .tab").forEach(b=>b.onclick=()=>{rng=b.dataset.v;document.querySelectorAll("#rg .tab").forEach(x=>x.classList.toggle("on",x===b));chart()});
 document.querySelectorAll("#md .tab").forEach(b=>b.onclick=()=>{mode=b.dataset.v;document.querySelectorAll("#md .tab").forEach(x=>x.classList.toggle("on",x===b));chart()});
 const hid=()=>{try{return localStorage.getItem("finhide")==="1"}catch(z){return false}};
 const setHide=h=>{document.body.classList.toggle("hide",h);$("eye").textContent=h?"Zobrazit částky":"Skrýt částky";try{localStorage.setItem("finhide",h?"1":"0")}catch(z){}};
 $("eye").onclick=()=>setHide(!document.body.classList.contains("hide"));
-setHide(hid());$("d").value=ymd(new Date());
+setHide(hid());$("d").value=$("gd").value=ymd(new Date());
 render();
 psync("fin",d=>{R=d.filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.id)).map(x=>({id:x.id,c:Number(x.c)||0,s:Number(x.s)||0,dc:Number(x.dc)||0,ds:Number(x.ds)||0})).sort((a,b)=>a.id<b.id?-1:1);
 if(!init){init=true;fill($("d").value)}render()});
+psync("findep",d=>{Fn=d.filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)&&(x.to==="c"||x.to==="s")).map(x=>({id:x.id,d:x.date,a:Number(x.amt)||0,to:x.to}));render()});
 </script></body></html>
