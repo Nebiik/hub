@@ -56,9 +56,13 @@ details[open] summary{margin-bottom:8px}
 </form>
 <div class="hs" id="dl" style="margin-top:10px"></div></details>
 <details class="card"><summary>Záznamy hodnot</summary><div class="hs" id="hs"></div></details>
+<section class="card"><div class="hd"><h2>Připomínka ve 20:00</h2></div>
+<div class="hint" style="margin:0 0 10px">Večer ti přijde upozornění, pokud jsi ještě nezadal dnešní hodnoty. Na iPhonu to jde jen z ikony HUBu na ploše.</div>
+<div class="g2"><button class="nb" id="pbt" type="button" style="padding:10px"></button><span id="pst" class="hint" style="align-self:center;margin:0"></span></div></section>
 </div></div>
 <script type="module">
-import{psync,pput,pdel,ymd}from"./common.js";
+import{psync,pput,pdel,ymd,msg,app,VAPID}from"./common.js";
+import{getMessaging,getToken,deleteToken}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 const $=i=>document.getElementById(i);
 let R=[],Fn=[],rng="month",mode="val",init=false;
 const nf=new Intl.NumberFormat("cs-CZ",{maximumFractionDigits:0}),kc=v=>nf.format(Math.round(v))+" Kč",pc=v=>(v>=0?"+":"−")+Math.abs(v).toFixed(1).replace(".",",")+" %";
@@ -109,6 +113,17 @@ const hid=()=>{try{return localStorage.getItem("finhide")==="1"}catch(z){return 
 const setHide=h=>{document.body.classList.toggle("hide",h);$("eye").textContent=h?"Zobrazit částky":"Skrýt částky";try{localStorage.setItem("finhide",h?"1":"0")}catch(z){}};
 $("eye").onclick=()=>setHide(!document.body.classList.contains("hide"));
 setHide(hid());$("d").value=$("gd").value=ymd(new Date());
+const hs=t=>{let h=5381;for(const c of t)h=(h*33^c.charCodeAt(0))>>>0;return"t"+h.toString(36)+t.length.toString(36)};
+const pst=()=>{let on=false;try{on=!!localStorage.getItem("pushTok")&&Notification.permission==="granted"}catch(z){}$("pst").textContent=on?"Zapnuto na tomto zařízení.":"Vypnuto.";$("pbt").textContent=on?"Vypnout":"Zapnout připomínku";return on};
+$("pbt").onclick=async()=>{try{
+if(pst()){const t=localStorage.getItem("pushTok");try{await deleteToken(getMessaging(app))}catch(z){}await pdel("tokens",hs(t));localStorage.removeItem("pushTok");pst();return}
+if(!("Notification"in window)||!("serviceWorker"in navigator)){msg("Tady upozornění nejdou zapnout. Na iPhonu otevři HUB z ikony na ploše.");return}
+if(!VAPID||VAPID.startsWith("VLOŽ")){msg("Chybí klíč pro upozornění (VAPID) v souboru common.js.");return}
+if(await Notification.requestPermission()!=="granted"){msg("Upozornění nejsou povolená v nastavení telefonu.");return}
+const reg=await navigator.serviceWorker.ready,t=await getToken(getMessaging(app),{vapidKey:VAPID,serviceWorkerRegistration:reg});if(!t)throw new Error("bez tokenu");
+await pput("tokens",{id:hs(t),token:t,purpose:"fin"});localStorage.setItem("pushTok",t);pst()}catch(e){msg("Zapnutí upozornění se nepovedlo: "+(e&&e.message?e.message:e))}};
+pst();
+
 render();
 psync("fin",d=>{R=d.filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.id)).map(x=>({id:x.id,c:Number(x.c)||0,s:Number(x.s)||0,dc:Number(x.dc)||0,ds:Number(x.ds)||0})).sort((a,b)=>a.id<b.id?-1:1);
 if(!init){init=true;fill($("d").value)}render()});
