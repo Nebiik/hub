@@ -19,9 +19,28 @@
 .soon{background:transparent;color:var(--mut);border:1.5px dashed var(--br)}
 .soon:last-child{grid-column:1/-1;min-height:96px}
 @media(min-width:720px){.bento{grid-template-columns:repeat(6,1fr)}.cal{grid-column:span 4}.tsk,.soon,.shp,.fin{grid-column:span 2}}
+.wx{padding:0;overflow:hidden;margin-bottom:6px;border-radius:24px}
+.wxs{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.wxs::-webkit-scrollbar{display:none}
+.sl{flex:0 0 100%;scroll-snap-align:start;padding:16px 18px 6px}
+.wl{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.wd{font-size:14px;color:var(--mut)}
+.wt{font:700 44px/1.05 var(--f)}.wn{font-size:13px;color:var(--mut);font-weight:500;margin-left:6px}
+.wr{font-size:14px;color:var(--mut)}
+.wi{text-align:center}.wi span{font-size:46px;line-height:1;display:block}.wi small{font-size:12px;color:var(--mut)}
+.wm{font-size:13px;color:var(--mut);margin-top:10px}
+.wxn{display:flex;justify-content:center;align-items:center;gap:10px;padding:6px 0 12px}
+#wxd{display:flex;gap:6px}
+#wxd button{width:8px;height:8px;border-radius:50%;border:0;padding:0;background:var(--br);cursor:pointer}
+#wxd button.on{background:var(--ac)}
+.wxn .nb{padding:2px 10px}
+.wxa{margin:0 0 18px;font-size:11px;color:var(--mut);text-align:right}.wxa a{color:inherit}
 </style></head>
 <body><div class="wrap">
 <div class="top"><div><div class="big" id="dt"></div><div class="nm" id="nm"></div><span class="chip" id="dk"></span></div><a href="#" id="rc">Odhlásit se</a></div>
+<section class="card wx"><div class="wxs" id="wxs"><div class="sl empty">Načítám počasí…</div></div>
+<div class="wxn"><button class="nb" id="wp" type="button" aria-label="Předchozí den">‹</button><span id="wxd"></span><button class="nb" id="wn" type="button" aria-label="Další den">›</button></div></section>
+<p class="wxa"><a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a></p>
 <div class="bento">
 <a class="tile cal" href="kalendar.html"><span class="ic">🗓️</span><h2>Kalendář</h2><p id="cs">Načítám…</p><p class="sub" id="cn"></p></a>
 <a class="tile tsk" href="ukoly.html"><span class="ic">✅</span><h2>Úkoly</h2><p id="ts">Načítám…</p><p class="sub" id="tn"></p></a>
@@ -50,4 +69,23 @@ sync("shop",d=>{const o=d.filter(t=>t.done!==true&&t.title);$("ns").textContent=
 psync("fin",d=>{$("fs").textContent=d.some(x=>x.id===td)?"Dnes zadáno ✓":"Dnes ještě nezadáno";$("fn").textContent=d.length?d.length+" záznamů":""});
 sync("tasks",d=>{const o=d.filter(t=>t.done!==true),od=o.filter(t=>t.due&&t.due<td).length;
 $("ts").textContent=o.length?o.length+" otevřených":"Vše hotovo";$("tn").textContent=od?od+" po termínu":""});
+
+const WX={lat:49.1951,lon:16.6068};
+const wc=c=>c===0?["☀️","Jasno"]:c===1?["🌤️","Převážně jasno"]:c===2?["⛅","Polojasno"]:c===3?["☁️","Zataženo"]:c<=48?["🌫️","Mlha"]:c<=55?["🌦️","Mrholení"]:c<=57?["🌧️","Mrznoucí mrholení"]:c<=65?["🌧️","Déšť"]:c<=67?["🌧️","Mrznoucí déšť"]:c<=77?["🌨️","Sněžení"]:c<=82?["🌦️","Přeháňky"]:c<=86?["🌨️","Sněhové přeháňky"]:["⛈️","Bouřka"];
+const rn=v=>v==null?"–":Math.round(v);
+function draw(d){const D=d.daily,n=D.time.length,box=$("wxs"),dots=$("wxd");box.innerHTML="";dots.innerHTML="";
+for(let i=0;i<n;i++){const[ic,tx]=wc(D.weather_code[i]),s=document.createElement("div");s.className="sl";
+const dd=new Date(D.time[i]+"T12:00:00").toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"numeric"});
+const day=i===0?"Dnes · Brno":i===1?"Zítra":dd[0].toUpperCase()+dd.slice(1);
+const big=i===0&&d.current?rn(d.current.temperature_2m):rn(D.temperature_2m_max[i]);
+s.innerHTML='<div class="wl"><div><div class="wd"></div><div class="wt">'+big+'°'+(i===0?'<span class="wn">teď</span>':'')+'</div><div class="wr">↑ '+rn(D.temperature_2m_max[i])+'° &nbsp;↓ '+rn(D.temperature_2m_min[i])+'°</div></div><div class="wi"><span>'+ic+'</span><small>'+tx+'</small></div></div><div class="wm">💧 '+rn(D.precipitation_probability_max[i])+' % &nbsp; 💨 '+rn(D.wind_speed_10m_max[i])+' km/h</div>';
+s.querySelector(".wd").textContent=day;box.append(s);
+const b=document.createElement("button");b.type="button";b.setAttribute("aria-label","Den "+(i+1));b.onclick=()=>box.scrollTo({left:i*box.clientWidth,behavior:"smooth"});dots.append(b)}
+const mark=()=>{const i=Math.round(box.scrollLeft/box.clientWidth);[...dots.children].forEach((b,j)=>b.classList.toggle("on",j===i))};
+box.onscroll=mark;mark();
+$("wp").onclick=()=>box.scrollBy({left:-box.clientWidth,behavior:"smooth"});$("wn").onclick=()=>box.scrollBy({left:box.clientWidth,behavior:"smooth"})}
+async function loadWx(){let d;try{const c=JSON.parse(localStorage.getItem("wx")||"null");if(c&&Date.now()-c.t<18e5)d=c.d}catch(z){}
+if(!d){try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+WX.lat+"&longitude="+WX.lon+"&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=Europe%2FPrague&forecast_days=6");if(!r.ok)throw 0;d=await r.json();try{localStorage.setItem("wx",JSON.stringify({t:Date.now(),d}))}catch(z){}}catch(z){$("wxs").innerHTML='<div class="sl empty">Počasí se nepodařilo načíst.</div>';return}}
+draw(d)}
+loadWx();
 </script></body></html>
