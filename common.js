@@ -1,6 +1,6 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import{getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,getDocs}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 export const VAPID="BDZ_zhy3-gS-bydMgK-ZlcZnxMshIRYf_ppEKbqQGTKwOQ115TY1qQILS2fmgYy9W6iN7ZR8rPU4bZFFvkiVvRk";
 export const app=initializeApp({apiKey:"AIzaSyC2SgxfHJMHtb-C4A2QTjwXaNQ1EiFRIj0",authDomain:"hubnebik.firebaseapp.com",projectId:"hubnebik",storageBucket:"hubnebik.firebasestorage.app",messagingSenderId:"469840567753",appId:"1:469840567753:web:5ca65b5c8d00fd952a9c18"}),fs=getFirestore(app);
 const R=document.documentElement;
@@ -19,6 +19,8 @@ document.body.append(ov);
 g("lf").onsubmit=e=>{e.preventDefault();signInWithEmailAndPassword(auth,g("le").value,g("lp").value).catch(()=>g("lm").textContent="Přihlášení se nepovedlo. Zkontroluj e-mail a heslo.")};
 const authed=new Promise(res=>onAuthStateChanged(auth,u=>{if(u){ov.remove();res(u)}else{if(!ov.isConnected)document.body.append(ov);g("lf").style.visibility="visible"}}));
 export const logout=()=>signOut(auth);
+export async function dump(){const u=await authed,g=async(...p)=>(await getDocs(collection(fs,...p))).docs.map(d=>({id:d.id,...d.data()}));
+return{app:"HUB",vytvoreno:new Date().toISOString(),sdilene:{events:await g("spaces","main","events"),tasks:await g("spaces","main","tasks"),shop:await g("spaces","main","shop")},soukrome:{fin:await g("users",u.uid,"fin"),findep:await g("users",u.uid,"findep")}}}
 export const me=authed.then(u=>u.uid);
 export const dn=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10))/864e5;
 function occ1(e,s){if(s<e.date||(e.until&&s>e.until))return false;const r=e.rep||(e.type==="bday"||e.type==="nday"?"y":"");

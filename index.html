@@ -36,8 +36,8 @@
 .wxn .nb{padding:2px 10px}
 .wxa{margin:0 0 18px;font-size:11px;color:var(--mut);text-align:right}.wxa a{color:inherit}
 .ver{margin:22px 0 4px;text-align:center}
-#vb{border:0;background:none;color:var(--mut);font-size:13px;cursor:pointer;text-decoration:underline}
-#vl{margin-top:10px;text-align:left;max-height:320px;overflow:auto;border-radius:20px}
+#vb,#bkb{border:0;background:none;color:var(--mut);font-size:13px;cursor:pointer;text-decoration:underline}
+#vl,#bkp{margin-top:10px;text-align:left;max-height:320px;overflow:auto;border-radius:20px}
 .vi{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--br);font-size:14px}.vi:first-child{border-top:0}.vi b{color:var(--ac);min-width:46px}
 [hidden]{display:none!important}
 </style></head>
@@ -54,10 +54,12 @@
 <div class="tile soon"><span class="ic">🏋️</span><h2>Cvičení</h2><p class="sub">Brzy</p></div>
 <div class="tile soon"><span class="ic">💼</span><h2>Práce</h2><p class="sub">Brzy</p></div>
 </div>
-<div class="ver"><button id="vb" type="button"></button><div id="vl" class="card" hidden></div></div>
+<div class="ver"><button id="vb" type="button"></button> · <button id="bkb" type="button">Záloha dat</button>
+<div id="vl" class="card" hidden></div>
+<div id="bkp" class="card" hidden><div style="font-size:14px;margin-bottom:10px">Stáhne všechna tvoje data (kalendář, úkoly, nákup a tvoje soukromé finance) do jednoho souboru. Ulož si ho na bezpečné místo, protože obsahuje i finance.</div><button class="add" id="bk" type="button" style="width:100%">Stáhnout zálohu</button><div id="bn" class="empty" style="margin-top:8px"></div></div></div>
 </div>
 <script type="module">
-import{sync,hols,ymd,logout,occ,psync}from"./common.js";
+import{sync,hols,ymd,logout,occ,psync,dump}from"./common.js";
 import{nameDay}from"./names.js";
 import{VERSION,CHANGES}from"./version.js";
 const $=i=>document.getElementById(i),now=new Date(),td=ymd(now);
@@ -96,7 +98,13 @@ async function loadWx(){let d;try{const c=JSON.parse(localStorage.getItem("wx")|
 if(!d){try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+WX.lat+"&longitude="+WX.lon+"&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=Europe%2FPrague&forecast_days=6");if(!r.ok)throw 0;d=await r.json();try{localStorage.setItem("wx",JSON.stringify({t:Date.now(),d}))}catch(z){}}catch(z){$("wxs").innerHTML='<div class="sl empty">Počasí se nepodařilo načíst.</div>';return}}
 draw(d)}
 $("vb").textContent="HUB v"+VERSION+" · Co je nového";
-$("vb").onclick=()=>{$("vl").hidden=!$("vl").hidden};
+$("vb").onclick=()=>{$("vl").hidden=!$("vl").hidden;$("bkp").hidden=true};
+$("bkb").onclick=()=>{$("bkp").hidden=!$("bkp").hidden;$("vl").hidden=true};
+$("bk").onclick=async()=>{const bn=$("bn");bn.textContent="Připravuji…";try{const d=await dump();d.verze=VERSION;const name="hub-zaloha-"+ymd(new Date())+".json",f=new File([JSON.stringify(d,null,1)],name,{type:"application/json"});
+const c=d.sdilene,k=d.soukrome;bn.textContent="Záloha připravena: událostí "+c.events.length+", úkolů "+c.tasks.length+", nákup "+c.shop.length+", záznamů financí "+k.fin.length+".";
+if(matchMedia("(pointer:coarse)").matches&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:name})}catch(e){}}
+else{const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}}
+catch(e){bn.textContent="Zálohu se nepodařilo vytvořit."}};
 CHANGES.forEach((c,i)=>{const d=document.createElement("div"),b=document.createElement("b"),t=document.createElement("span");d.className="vi";b.textContent="v1."+(CHANGES.length-i);t.textContent=c;d.append(b,t);$("vl").append(d)});
 loadWx();
 </script></body></html>
