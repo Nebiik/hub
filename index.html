@@ -35,6 +35,11 @@
 #wxd button.on{background:var(--ac)}
 .wxn .nb{padding:2px 10px}
 .wxa{margin:0 0 18px;font-size:11px;color:var(--mut);text-align:right}.wxa a{color:inherit}
+.ver{margin:22px 0 4px;text-align:center}
+#vb{border:0;background:none;color:var(--mut);font-size:13px;cursor:pointer;text-decoration:underline}
+#vl{margin-top:10px;text-align:left;max-height:320px;overflow:auto;border-radius:20px}
+.vi{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--br);font-size:14px}.vi:first-child{border-top:0}.vi b{color:var(--ac);min-width:46px}
+[hidden]{display:none!important}
 </style></head>
 <body><div class="wrap">
 <div class="top"><div><div class="big" id="dt"></div><div class="nm" id="nm"></div><span class="chip" id="dk"></span></div><a href="#" id="rc">Odhlásit se</a></div>
@@ -48,10 +53,13 @@
 <a class="tile fin" href="finance.html"><span class="ic">💰</span><h2>Finance</h2><p id="fs">Načítám…</p><p class="sub" id="fn"></p></a>
 <div class="tile soon"><span class="ic">🏋️</span><h2>Cvičení</h2><p class="sub">Brzy</p></div>
 <div class="tile soon"><span class="ic">💼</span><h2>Práce</h2><p class="sub">Brzy</p></div>
-</div></div>
+</div>
+<div class="ver"><button id="vb" type="button"></button><div id="vl" class="card" hidden></div></div>
+</div>
 <script type="module">
 import{sync,hols,ymd,logout,occ,psync}from"./common.js";
 import{nameDay}from"./names.js";
+import{VERSION,CHANGES}from"./version.js";
 const $=i=>document.getElementById(i),now=new Date(),td=ymd(now);
 const dt=now.toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"long"});
 $("dt").textContent=dt[0].toUpperCase()+dt.slice(1);
@@ -87,5 +95,8 @@ $("wp").onclick=()=>box.scrollBy({left:-box.clientWidth,behavior:"smooth"});$("w
 async function loadWx(){let d;try{const c=JSON.parse(localStorage.getItem("wx")||"null");if(c&&Date.now()-c.t<18e5)d=c.d}catch(z){}
 if(!d){try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+WX.lat+"&longitude="+WX.lon+"&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=Europe%2FPrague&forecast_days=6");if(!r.ok)throw 0;d=await r.json();try{localStorage.setItem("wx",JSON.stringify({t:Date.now(),d}))}catch(z){}}catch(z){$("wxs").innerHTML='<div class="sl empty">Počasí se nepodařilo načíst.</div>';return}}
 draw(d)}
+$("vb").textContent="HUB v"+VERSION+" · Co je nového";
+$("vb").onclick=()=>{$("vl").hidden=!$("vl").hidden};
+CHANGES.forEach((c,i)=>{const d=document.createElement("div"),b=document.createElement("b"),t=document.createElement("span");d.className="vi";b.textContent="v1."+(CHANGES.length-i);t.textContent=c;d.append(b,t);$("vl").append(d)});
 loadWx();
 </script></body></html>

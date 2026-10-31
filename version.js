@@ -1,0 +1,28 @@
+// Nejnovější změna je nahoře. Číslo verze se počítá samo podle počtu záznamů.
+export const CHANGES=[
+"Přehled verzí: číslo verze a seznam změn na úvodní stránce",
+"Upozornění: ranní e-mail s přehledem dne a večerní push s připomínkou zápisu hodnot",
+"Počasí na úvodní stránce: Brno, dnes a dalších 5 dní, přejíždění do stran",
+"Finance upravené pro telefon, vklady a výběry zadávané zvlášť",
+"Finance: soukromý přehled krypta a akcií, výnos bez vkladů a grafy",
+"Nákupní seznam jako samostatná dlaždice",
+"Seznam nejbližších 30 dní v kalendáři sbalený do rozbalovátka",
+"Automatická synchronizace z Google Kalendáře",
+"Události na víc dní (od–do)",
+"Pole Zadal (Tom, Sabina), výběr barvy události a hromadné obarvení",
+"Opakující se události a import kalendáře ze souboru .ics (Nástroje)",
+"Jmeniny: Svátek má pod dnešním datem a v kalendáři",
+"Oprava rozmazaného horního okraje na telefonu",
+"HUB jako aplikace na ploše s vlastní ikonou",
+"Úkoly přepracované: seznam nahoře, přidávání dole, sekce Hotovo",
+"Přepínač světlého a tmavého režimu",
+"Nový vzhled: barevné dlaždice a přehled dne na úvodní stránce",
+"Přihlášení e-mailem a heslem",
+"Přesun na GitHub Pages a Firebase: rozcestník, kalendář a úkoly sdílené s přítelkyní",
+"Sdílené ukládání událostí mezi zařízeními",
+"Úprava událostí",
+"Narozeniny a svátky opakované každý rok",
+"Státní svátky a víkendy barevně v kalendáři",
+"První verze kalendáře: měsíční přehled, přidávání a mazání událostí"
+];
+export const VERSION="1."+CHANGES.length;
