@@ -1,5 +1,9 @@
 // Nejnovější změna je nahoře. Číslo verze se počítá samo podle počtu záznamů.
 export const CHANGES=[
+"Nastavení upozornění na úvodní stránce (kdo jsem, co posílat, zapnout a vypnout)",
+"Upozornění na změny v nákupním seznamu: přidání a koupení položky druhému",
+"Připomínky událostí pushkou: ráno ten den nebo den předem večer",
+"Animace a doladění vzhledu: plynulé přechody, nájezd dlaždic a pozdrav podle denní doby",
 "Upozornění spolehlivější: odesílají se v časových oknech, takže zpoždění GitHubu nevadí",
 "Křížovka dne: malé skandinávské křížovky s tajenkou (nahradila dlaždici Cvičení)",
 "Záloha dat: stažení všech dat do jednoho souboru (úvodní stránka, dole)",

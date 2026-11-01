@@ -36,13 +36,16 @@
 .wxn .nb{padding:2px 10px}
 .wxa{margin:0 0 18px;font-size:11px;color:var(--mut);text-align:right}.wxa a{color:inherit}
 .ver{margin:22px 0 4px;text-align:center}
-#vb,#bkb{border:0;background:none;color:var(--mut);font-size:13px;cursor:pointer;text-decoration:underline}
-#vl,#bkp{margin-top:10px;text-align:left;max-height:320px;overflow:auto;border-radius:20px}
+#vb,#bkb,#ntb{border:0;background:none;color:var(--mut);font-size:13px;cursor:pointer;text-decoration:underline}
+#vl,#bkp,#ntp{margin-top:10px;text-align:left;max-height:320px;overflow:auto;border-radius:20px}
 .vi{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--br);font-size:14px}.vi:first-child{border-top:0}.vi b{color:var(--ac);min-width:46px}
 [hidden]{display:none!important}
+.gt{font-size:15px;color:var(--mut);margin-bottom:4px}
+.nl{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:10px}.nl select{padding:6px 10px;border:1px solid var(--br);border-radius:10px;background:var(--bg)}
+.nd{margin-top:12px;font-size:14px}.nd summary{cursor:pointer;color:var(--mut)}.nd input{width:100%;margin-top:8px;padding:10px 12px;border:1px solid var(--br);border-radius:12px;background:var(--bg)}.hint2{font-size:12px;color:var(--mut);margin-top:8px}
 </style></head>
 <body><div class="wrap">
-<div class="top"><div><div class="big" id="dt"></div><div class="nm" id="nm"></div><span class="chip" id="dk"></span></div><a href="#" id="rc">Odhlásit se</a></div>
+<div class="top"><div><div class="gt" id="gt"></div><div class="big" id="dt"></div><div class="nm" id="nm"></div><span class="chip" id="dk"></span></div><a href="#" id="rc">Odhlásit se</a></div>
 <section class="card wx"><div class="wxs" id="wxs"><div class="sl empty">Načítám počasí…</div></div>
 <div class="wxn"><button class="nb" id="wp" type="button" aria-label="Předchozí den">‹</button><span id="wxd"></span><button class="nb" id="wn" type="button" aria-label="Další den">›</button></div></section>
 <p class="wxa"><a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a></p>
@@ -54,12 +57,20 @@
 <a class="tile xw" href="krizovka.html"><span class="ic">🧩</span><h2>Křížovka</h2><p id="xs">Načítám…</p></a>
 <div class="tile soon"><span class="ic">💼</span><h2>Práce</h2><p class="sub">Brzy</p></div>
 </div>
-<div class="ver"><button id="vb" type="button"></button> · <button id="bkb" type="button">Záloha dat</button>
+<div class="ver"><button id="vb" type="button"></button> · <button id="bkb" type="button">Záloha dat</button> · <button id="ntb" type="button">Upozornění</button>
 <div id="vl" class="card" hidden></div>
-<div id="bkp" class="card" hidden><div style="font-size:14px;margin-bottom:10px">Stáhne všechna tvoje data (kalendář, úkoly, nákup a tvoje soukromé finance) do jednoho souboru. Ulož si ho na bezpečné místo, protože obsahuje i finance.</div><button class="add" id="bk" type="button" style="width:100%">Stáhnout zálohu</button><div id="bn" class="empty" style="margin-top:8px"></div></div></div>
+<div id="bkp" class="card" hidden><div style="font-size:14px;margin-bottom:10px">Stáhne všechna tvoje data (kalendář, úkoly, nákup a tvoje soukromé finance) do jednoho souboru. Ulož si ho na bezpečné místo, protože obsahuje i finance.</div><button class="add" id="bk" type="button" style="width:100%">Stáhnout zálohu</button><div id="bn" class="empty" style="margin-top:8px"></div></div>
+<div id="ntp" class="card" hidden><div style="font-size:14px;margin-bottom:10px">Upozornění na tomto zařízení</div>
+<button class="add" id="nb1" type="button" style="width:100%"></button>
+<label class="nl">Jsem <select id="nwho"><option value="">–</option><option value="Tom">Tom</option><option value="Sabina">Sabina</option></select></label>
+<label class="nl"><input type="checkbox" id="nshop"> Nákup: změny od druhého</label>
+<label class="nl"><input type="checkbox" id="ncal"> Kalendář: připomínky událostí</label>
+<label class="nl"><input type="checkbox" id="nfin"> Finance: večerní připomínka</label>
+<details class="nd"><summary>Okamžitá upozornění (nastavení pro nákup)</summary><div class="hint2">Aby upozornění na nákup chodila hned, je potřeba jednou vložit přístupový token z GitHubu (jen oprávnění Actions: Read and write pro repozitář hub).</div><input id="ngh" type="password" placeholder="GitHub token" autocomplete="off"><button class="add" id="ngs" type="button" style="width:100%;margin-top:8px">Uložit token</button><div id="ngm" class="empty"></div></details>
+<div id="nmsg" class="empty" style="margin-top:8px"></div></div></div>
 </div>
 <script type="module">
-import{sync,hols,ymd,logout,occ,psync,dump,dn}from"./common.js";
+import{sync,put,pput,hols,ymd,logout,occ,psync,dump,dn,pushOn,pushOff,pushIsOn}from"./common.js";
 import{KRIZ}from"./krizovky.js";
 import{nameDay}from"./names.js";
 import{VERSION,CHANGES}from"./version.js";
@@ -103,8 +114,19 @@ async function loadWx(){let d;try{const c=JSON.parse(localStorage.getItem("wx")|
 if(!d){try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+WX.lat+"&longitude="+WX.lon+"&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=Europe%2FPrague&forecast_days=6");if(!r.ok)throw 0;d=await r.json();try{localStorage.setItem("wx",JSON.stringify({t:Date.now(),d}))}catch(z){}}catch(z){$("wxs").innerHTML='<div class="sl empty">Počasí se nepodařilo načíst.</div>';return}}
 draw(d)}
 $("vb").textContent="HUB v"+VERSION+" · Co je nového";
-$("vb").onclick=()=>{$("vl").hidden=!$("vl").hidden;$("bkp").hidden=true};
-$("bkb").onclick=()=>{$("bkp").hidden=!$("bkp").hidden;$("vl").hidden=true};
+$("vb").onclick=()=>{$("vl").hidden=!$("vl").hidden;$("bkp").hidden=true;$("ntp").hidden=true};
+$("bkb").onclick=()=>{$("bkp").hidden=!$("bkp").hidden;$("vl").hidden=true;$("ntp").hidden=true};
+$("ntb").onclick=()=>{$("ntp").hidden=!$("ntp").hidden;$("vl").hidden=true;$("bkp").hidden=true};
+let st={who:"",shop:true,cal:true,fin:true};
+const gh=now.getHours(),greet=()=>{$("gt").textContent=(gh<5?"Dobrou noc":gh<10?"Dobré ráno":gh<18?"Dobrý den":"Dobrý večer")+(st.who?", "+st.who:"")};
+const showSt=()=>{$("nwho").value=st.who||"";$("nshop").checked=st.shop!==false;$("ncal").checked=st.cal!==false;$("nfin").checked=st.fin!==false};
+const pst=()=>{$("nb1").textContent=pushIsOn()?"Vypnout na tomto zařízení":"Zapnout upozornění";return pushIsOn()};
+$("nb1").onclick=async()=>{try{if(pst())await pushOff();else await pushOn();$("nmsg").textContent=""}catch(e){$("nmsg").textContent=e.message||"Nepodařilo se."}pst()};
+const saveSt=()=>{st={who:$("nwho").value,shop:$("nshop").checked,cal:$("ncal").checked,fin:$("nfin").checked};pput("settings",{id:"notif",...st});greet()};
+["nwho","nshop","ncal","nfin"].forEach(i=>$(i).onchange=saveSt);
+$("ngs").onclick=async()=>{const t=$("ngh").value.trim();if(!t){$("ngm").textContent="Vlož token.";return}await put("meta",{id:"ghtoken",t});$("ngh").value="";$("ngm").textContent="Token uložen."};
+psync("settings",d=>{const x=d.find(q=>q.id==="notif");if(x)st={who:x.who||"",shop:x.shop!==false,cal:x.cal!==false,fin:x.fin!==false};showSt();greet()});
+pst();showSt();greet();
 $("bk").onclick=async()=>{const bn=$("bn");bn.textContent="Připravuji…";try{const d=await dump();d.verze=VERSION;const name="hub-zaloha-"+ymd(new Date())+".json",f=new File([JSON.stringify(d,null,1)],name,{type:"application/json"});
 const c=d.sdilene,k=d.soukrome;bn.textContent="Záloha připravena: událostí "+c.events.length+", úkolů "+c.tasks.length+", nákup "+c.shop.length+", záznamů financí "+k.fin.length+".";
 if(matchMedia("(pointer:coarse)").matches&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:name})}catch(e){}}

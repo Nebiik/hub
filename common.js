@@ -1,6 +1,6 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import{getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,getDocs}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,getDocs,getDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 export const VAPID="BDZ_zhy3-gS-bydMgK-ZlcZnxMshIRYf_ppEKbqQGTKwOQ115TY1qQILS2fmgYy9W6iN7ZR8rPU4bZFFvkiVvRk";
 export const app=initializeApp({apiKey:"AIzaSyC2SgxfHJMHtb-C4A2QTjwXaNQ1EiFRIj0",authDomain:"hubnebik.firebaseapp.com",projectId:"hubnebik",storageBucket:"hubnebik.firebasestorage.app",messagingSenderId:"469840567753",appId:"1:469840567753:web:5ca65b5c8d00fd952a9c18"}),fs=getFirestore(app);
 const R=document.documentElement;
@@ -22,6 +22,23 @@ export const logout=()=>signOut(auth);
 export async function dump(){const u=await authed,g=async(...p)=>(await getDocs(collection(fs,...p))).docs.map(d=>({id:d.id,...d.data()}));
 return{app:"HUB",vytvoreno:new Date().toISOString(),sdilene:{events:await g("spaces","main","events"),tasks:await g("spaces","main","tasks"),shop:await g("spaces","main","shop")},soukrome:{fin:await g("users",u.uid,"fin"),findep:await g("users",u.uid,"findep")}}}
 export const me=authed.then(u=>u.uid);
+export const GH={owner:"Nebiik",repo:"hub"};
+let ghT=null;
+export async function ghDispatch(wf,inputs){try{await authed;if(!ghT){const s=await getDoc(doc(fs,"spaces","main","meta","ghtoken"));ghT=s.exists()?(s.data().t||""):""}
+if(!ghT)return false;const r=await fetch("https://api.github.com/repos/"+GH.owner+"/"+GH.repo+"/actions/workflows/"+wf+"/dispatches",{method:"POST",keepalive:true,headers:{Authorization:"Bearer "+ghT,Accept:"application/vnd.github+json","Content-Type":"application/json"},body:JSON.stringify({ref:"main",inputs})});return r.status===204}catch(e){return false}}
+export async function whoami(){const u=await authed;let who="";try{const s=await getDoc(doc(fs,"users",u.uid,"settings","notif"));if(s.exists())who=s.data().who||""}catch(e){}return{uid:u.uid,who}}
+const tokHash=t=>{let h=5381;for(const c of t)h=(h*33^c.charCodeAt(0))>>>0;return"t"+h.toString(36)+t.length.toString(36)};
+export const pushIsOn=()=>{try{return !!localStorage.getItem("pushTok")&&Notification.permission==="granted"}catch(e){return false}};
+export async function pushOn(){
+if(!("Notification"in window)||!("serviceWorker"in navigator))throw new Error("Tady upozornění nejdou zapnout. Na iPhonu otevři HUB z ikony na ploše.");
+if(!VAPID||VAPID.startsWith("VLOŽ"))throw new Error("Chybí klíč pro upozornění (VAPID).");
+if(await Notification.requestPermission()!=="granted")throw new Error("Upozornění nejsou povolená v nastavení telefonu.");
+const{getMessaging,getToken}=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js");
+const reg=await navigator.serviceWorker.ready,t=await getToken(getMessaging(app),{vapidKey:VAPID,serviceWorkerRegistration:reg});
+if(!t)throw new Error("Nepodařilo se získat token.");
+await pput("tokens",{id:tokHash(t),token:t,purpose:"all"});localStorage.setItem("pushTok",t)}
+export async function pushOff(){const t=localStorage.getItem("pushTok");try{const{getMessaging,deleteToken}=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js");await deleteToken(getMessaging(app))}catch(e){}
+if(t)await pdel("tokens",tokHash(t));localStorage.removeItem("pushTok")}
 export const dn=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10))/864e5;
 function occ1(e,s){if(s<e.date||(e.until&&s>e.until))return false;const r=e.rep||(e.type==="bday"||e.type==="nday"?"y":"");
 if(!r)return s===e.date;if(r==="d")return true;if(r==="w")return(dn(s)-dn(e.date))%7===0;if(r==="m")return s.slice(8)===e.date.slice(8);return s.slice(5)===e.date.slice(5)}

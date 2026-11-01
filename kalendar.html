@@ -31,6 +31,7 @@ details.card summary{cursor:pointer;color:var(--mut);font-size:14px}details.card
 <label class="opt">Do (nepovinné, víc dní) <input id="end" type="date"></label>
 <div class="row"><input id="time" type="time"><select id="type"><option value="meet">Schůzka</option><option value="bday">Narozeniny (každý rok)</option><option value="nday">Svátek (každý rok)</option><option value="other">Jiné</option></select></div>
 <div class="row"><select id="rep"><option value="">Neopakovat</option><option value="d">Každý den</option><option value="w">Každý týden</option><option value="m">Každý měsíc</option><option value="y">Každý rok</option></select><select id="by"><option value="Tom">Zadal: Tom</option><option value="Sabina">Zadal: Sabina</option></select></div>
+<select id="rem"><option value="">Bez připomenutí</option><option value="d0">Připomenout ráno ten den</option><option value="d1">Připomenout den předem večer</option></select>
 <div class="opt">Barva <div id="cols"></div></div>
 <button class="add" type="submit" id="sb">Přidat událost</button><button class="nb" type="button" id="cancel" hidden>Zrušit úpravu</button></form></div>
 <div style="height:16px"></div>
@@ -74,7 +75,7 @@ const u=$("up");u.innerHTML="";let n=0;for(let k=0;k<30;k++){const s=ymd(new Dat
 if(!n)u.innerHTML='<div class="empty">Zatím nic.</div>';
 $("upn").textContent=n?"("+n+")":"";
 if(!editId)$("date").value=sel}
-function start(e){editId=e.id;if(e.src==="gcal")msg("Událost se synchronizuje z Google Kalendáře: změna názvu, data a času se při další synchronizaci přepíše. Barvu a „Zadal“ můžeš měnit.");$("title").value=e.title;$("time").value=e.time||"";$("type").value=e.type;$("date").value=e.date;$("end").value=e.end||"";$("rep").value=e.rep||"";$("by").value=e.by||$("by").value;setCol(e.col||"");$("sb").textContent="Uložit změny";$("cancel").hidden=false;$("title").focus()}
+function start(e){editId=e.id;if(e.src==="gcal")msg("Událost se synchronizuje z Google Kalendáře: změna názvu, data a času se při další synchronizaci přepíše. Barvu a „Zadal“ můžeš měnit.");$("title").value=e.title;$("time").value=e.time||"";$("type").value=e.type;$("date").value=e.date;$("end").value=e.end||"";$("rep").value=e.rep||"";$("rem").value=e.rem||"";$("by").value=e.by||$("by").value;setCol(e.col||"");$("sb").textContent="Uložit změny";$("cancel").hidden=false;$("title").focus()}
 function stop(){editId=null;$("f").reset();$("by").value=lastBy();setCol("");$("sb").textContent="Přidat událost";$("cancel").hidden=true;render()}
 let pend=[],sk={};
 const bump=k=>sk[k]=(sk[k]||0)+1,un=v=>v.replace(/\\n/gi," ").replace(/\\([,;\\])/g,"$1"),hash=x=>{let h=5381;for(const c of x)h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36)+x.length.toString(36)};
@@ -102,7 +103,7 @@ $("ics").onchange=async()=>{pend=[];sk={};for(const f of $("ics").files)parse(aw
 const sx=Object.entries(sk).map(([k,v])=>v+"× "+k).join(", ");
 $("pv").textContent=(pend.length?"Nalezeno "+pend.length+" událostí ("+pend.filter(e=>e.rep).length+" opakujících se).":"V souboru se nic nenašlo.")+(sx?" Přeskočeno: "+sx+".":"");$("go").hidden=!pend.length};
 $("go").onclick=async()=>{$("go").disabled=true;let n=0;
-for(let i=0;i<pend.length;i+=25){await Promise.all(pend.slice(i,i+25).map(e=>{const id="i"+hash(e.uid),x=E.find(q=>q.id===id)||{};return put("events",{id,date:e.date,time:e.time,title:e.title,type:"other",by:x.by||$("iown").value,col:x.col||"",rep:e.rep,until:e.until,end:e.end})}));n=Math.min(i+25,pend.length);$("pv").textContent="Přeneseno "+n+" z "+pend.length+"…"}
+for(let i=0;i<pend.length;i+=25){await Promise.all(pend.slice(i,i+25).map(e=>{const id="i"+hash(e.uid),x=E.find(q=>q.id===id)||{};return put("events",{id,date:e.date,time:e.time,title:e.title,type:"other",by:x.by||$("iown").value,col:x.col||"",rem:x.rem||"",rep:e.rep,until:e.until,end:e.end})}));n=Math.min(i+25,pend.length);$("pv").textContent="Přeneseno "+n+" z "+pend.length+"…"}
 $("pv").textContent="Hotovo, přeneseno "+n+" událostí.";$("go").disabled=false;$("go").hidden=true;$("ics").value="";pend=[]};
 let colv="";
 const lastBy=()=>{try{return localStorage.getItem("hubby")||"Tom"}catch(z){return"Tom"}};
@@ -120,8 +121,8 @@ $("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);ren
 $("f").onsubmit=x=>{x.preventDefault();const t=$("title").value.trim(),ds=$("date").value||sel;if(!t)return;
 const ed=$("end").value>ds?$("end").value:"",ty=$("type").value,old=E.find(q=>q.id===editId),rp=["bday","nday"].includes(ty)?"y":$("rep").value;
 try{localStorage.setItem("hubby",$("by").value)}catch(z){}
-put("events",{id:editId||Date.now()+""+Math.floor(Math.random()*1000),date:ds,time:$("time").value,title:t,type:ty,end:ed,src:old&&old.src?old.src:"",by:$("by").value,col:colv,rep:rp,until:old&&old.rep===rp?(old.until||""):""});
+put("events",{id:editId||Date.now()+""+Math.floor(Math.random()*1000),date:ds,time:$("time").value,title:t,type:ty,end:ed,rem:$("rem").value,src:old&&old.src?old.src:"",by:$("by").value,col:colv,rep:rp,until:old&&old.rep===rp?(old.until||""):""});
 sel=ds;view=new Date(+ds.slice(0,4),+ds.slice(5,7)-1,1);stop()};
 render();
-sync("events",d=>{E=d.map(e=>({id:e.id,date:String(e.date||""),time:String(e.time||""),title:String(e.title||""),type:T.includes(e.type)?e.type:"other",by:String(e.by||""),src:e.src==="gcal"?"gcal":"",col:PAL.some(p=>p[0]===e.col)?e.col:"",rep:["d","w","m","y"].includes(e.rep)?e.rep:"",until:/^\d{4}-\d\d-\d\d$/.test(e.until)?e.until:"",end:/^\d{4}-\d\d-\d\d$/.test(e.end)?e.end:""})).filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date));render()});
+sync("events",d=>{E=d.map(e=>({id:e.id,date:String(e.date||""),time:String(e.time||""),title:String(e.title||""),type:T.includes(e.type)?e.type:"other",rem:["d0","d1"].includes(e.rem)?e.rem:"",by:String(e.by||""),src:e.src==="gcal"?"gcal":"",col:PAL.some(p=>p[0]===e.col)?e.col:"",rep:["d","w","m","y"].includes(e.rep)?e.rep:"",until:/^\d{4}-\d\d-\d\d$/.test(e.until)?e.until:"",end:/^\d{4}-\d\d-\d\d$/.test(e.end)?e.end:""})).filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date));render()});
 </script></body></html>

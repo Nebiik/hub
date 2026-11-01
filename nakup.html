@@ -34,12 +34,16 @@
 </section>
 </div></div>
 <script type="module">
-import{sync,put,del}from"./common.js";
+import{sync,put,del,ghDispatch,whoami}from"./common.js";
 const $=i=>document.getElementById(i);
 let K=[];
 const mk=(t,c,x)=>{const n=document.createElement(t);n.className=c;if(x!=null)n.textContent=x;return n};
+const Q={add:[],buy:[]};let qt=null;
+const qn=(k,t)=>{Q[k].push(t);clearTimeout(qt);qt=setTimeout(flushQ,15000)};
+async function flushQ(){clearTimeout(qt);qt=null;const a=Q.add.splice(0),b=Q.buy.splice(0);if(!a.length&&!b.length)return;const me=await whoami();await ghDispatch("shop.yml",{add:a.join(", ").slice(0,300),buy:b.join(", ").slice(0,300),uid:me.uid,who:me.who})}
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&qt)flushQ()});
 const ts=t=>Number(String(t.id).slice(0,13))||0;
-function row(t){const d=mk("div","tk"+(t.done?" dn":"")),c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.setAttribute("aria-label",t.done?"Vrátit na seznam":"Koupeno");c.onchange=()=>put("shop",{...t,done:c.checked});
+function row(t){const d=mk("div","tk"+(t.done?" dn":"")),c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.setAttribute("aria-label",t.done?"Vrátit na seznam":"Koupeno");c.onchange=()=>{put("shop",{...t,done:c.checked});if(c.checked)qn("buy",t.title)};
 d.append(c,mk("span","t",t.title));
 const x=mk("button","x","×");x.title="Smazat";x.onclick=()=>del("shop",t.id);d.append(x);return d}
 function render(){const o=K.filter(t=>!t.done).sort((a,b)=>ts(a)-ts(b)),dn=K.filter(t=>t.done).sort((a,b)=>ts(b)-ts(a));
@@ -50,7 +54,7 @@ const q=$("done");q.innerHTML="";dn.forEach(t=>q.append(row(t)));
 $("dl").innerHTML="";[...new Set(K.map(t=>t.title.toLowerCase()))].sort().forEach(v=>{const o=document.createElement("option");o.value=v;$("dl").append(o)})}
 $("clr").onclick=()=>K.filter(t=>t.done).forEach(t=>del("shop",t.id));
 $("f").onsubmit=e=>{e.preventDefault();const p=$("title").value.split(/[,;]/).map(s=>s.trim()).filter(Boolean).slice(0,30);if(!p.length)return;
-const b=Date.now();p.forEach((title,i)=>put("shop",{id:(b+i)+""+Math.floor(100+Math.random()*900),title:title.slice(0,100),done:false}));$("f").reset();$("title").focus()};
+const b=Date.now();p.forEach((title,i)=>{put("shop",{id:(b+i)+""+Math.floor(100+Math.random()*900),title:title.slice(0,100),done:false});qn("add",title.slice(0,100))});$("f").reset();$("title").focus()};
 render();
 sync("shop",d=>{K=d.map(t=>({id:t.id,title:String(t.title||""),done:t.done===true})).filter(t=>t.title);render()});
 </script></body></html>

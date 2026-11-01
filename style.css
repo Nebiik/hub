@@ -28,3 +28,25 @@ form input,form select{width:100%;padding:10px 12px;border:1px solid var(--br);b
 .meet{background:var(--m)}.bday{background:var(--b)}.other{background:var(--o)}.nday{background:var(--n)}
 .empty{color:var(--mut);font-size:14px}
 #msg{color:var(--red);font-weight:600;font-size:14px;margin-bottom:8px}
+
+@media(prefers-reduced-motion:no-preference){
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+.wrap{animation:in .4s ease-out both}
+body,.card,.nb,form input,form select{transition:background-color .3s,border-color .3s,color .3s}
+.bento>*{animation:pop .5s cubic-bezier(.2,.8,.2,1) both}
+.bento>*:nth-child(2){animation-delay:.06s}.bento>*:nth-child(3){animation-delay:.12s}.bento>*:nth-child(4){animation-delay:.18s}.bento>*:nth-child(5){animation-delay:.24s}.bento>*:nth-child(6){animation-delay:.3s}
+.tile{transition:transform .2s ease,box-shadow .2s ease}
+.tile:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(0,0,0,.2)}
+.tile:active,.add:active,.nb:active{transform:scale(.96)}
+.add,.nb{transition:transform .12s ease,filter .15s}
+.add:hover{filter:brightness(1.07)}
+.d{transition:background-color .15s,transform .12s}.d:active{transform:scale(.93)}
+.k.l{transition:background-color .12s}
+.sl{transition:opacity .3s}
+input[type=checkbox]{transition:transform .15s}input[type=checkbox]:active{transform:scale(.8)}
+#vl:not([hidden]),#bkp:not([hidden]),#ntp:not([hidden]),#dn:not([hidden]){animation:in .3s ease-out}
+details[open]>:not(summary){animation:in .3s ease-out}
+#wxd button{transition:background-color .2s,transform .2s}#wxd button.on{transform:scale(1.35)}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
