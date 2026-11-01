@@ -49,4 +49,24 @@ input[type=checkbox]{transition:transform .15s}input[type=checkbox]:active{trans
 details[open]>:not(summary){animation:in .3s ease-out}
 #wxd button{transition:background-color .2s,transform .2s}#wxd button.on{transform:scale(1.35)}
 }
+@media(prefers-reduced-motion:no-preference){
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:.2s ease-in both vtout}
+::view-transition-new(root){animation:.32s cubic-bezier(.2,.8,.2,1) both vtin}
+@keyframes vtout{to{opacity:0;transform:translateX(-16px)}}
+@keyframes vtin{from{opacity:0;transform:translateX(24px)}}
+@keyframes pop2{from{opacity:0;transform:translateY(26px) scale(.9)}60%{transform:translateY(-4px) scale(1.01)}to{opacity:1;transform:none}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes tada{0%{transform:scale(.8);opacity:0}50%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.bento>*{animation:pop2 .65s cubic-bezier(.2,.8,.2,1) both}
+.bento>*:nth-child(2){animation-delay:.1s}.bento>*:nth-child(3){animation-delay:.2s}.bento>*:nth-child(4){animation-delay:.3s}.bento>*:nth-child(5){animation-delay:.4s}.bento>*:nth-child(6){animation-delay:.5s}
+.stack>*,.grid>*,.wx{animation:pop2 .6s cubic-bezier(.2,.8,.2,1) both}
+.stack>*:nth-child(2),.grid>*:nth-child(2){animation-delay:.1s}.stack>*:nth-child(3){animation-delay:.2s}.stack>*:nth-child(4){animation-delay:.3s}.stack>*:nth-child(5){animation-delay:.4s}
+.tile .ic{display:inline-block;animation:float 3.6s ease-in-out infinite}
+.bento>*:nth-child(2) .ic{animation-delay:-.6s}.bento>*:nth-child(3) .ic{animation-delay:-1.2s}.bento>*:nth-child(4) .ic{animation-delay:-1.8s}.bento>*:nth-child(5) .ic{animation-delay:-2.4s}.bento>*:nth-child(6) .ic{animation-delay:-3s}
+.wi span{animation:float 4s ease-in-out infinite}
+.big,.gt{animation:in .6s ease-out both}.chip{animation:tada .6s .2s cubic-bezier(.2,.8,.2,1) both}
+#dn:not([hidden]){animation:tada .7s cubic-bezier(.2,.8,.2,1) both}
+.tile:hover .ic{animation-duration:1s}
+}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

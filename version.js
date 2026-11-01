@@ -1,5 +1,6 @@
 // Nejnovější změna je nahoře. Číslo verze se počítá samo podle počtu záznamů.
 export const CHANGES=[
+"Výraznější animace: plynulý přechod mezi stránkami, nájezd karet, plovoucí ikony a pozdrav",
 "Oprava upozornění z nákupu a zobrazení důvodu, když se neodešlou",
 "Nastavení upozornění na úvodní stránce (kdo jsem, co posílat, zapnout a vypnout)",
 "Upozornění na změny v nákupním seznamu: přidání a koupení položky druhému",
