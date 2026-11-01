@@ -1,5 +1,6 @@
 // Nejnovější změna je nahoře. Číslo verze se počítá samo podle počtu záznamů.
 export const CHANGES=[
+"Křížovka dne: malé skandinávské křížovky s tajenkou (nahradila dlaždici Cvičení)",
 "Záloha dat: stažení všech dat do jednoho souboru (úvodní stránka, dole)",
 "Přehled verzí: číslo verze a seznam změn na úvodní stránce",
 "Upozornění: ranní e-mail s přehledem dne a večerní push s připomínkou zápisu hodnot",

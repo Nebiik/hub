@@ -15,10 +15,10 @@
 .ic{font-size:36px;line-height:1}
 .tile:active{transform:scale(.98)}
 .cal{grid-column:1/-1;background:#3a4fd7;min-height:200px}.tsk{background:#0c8a7a}
-.shp{background:#c25a16}.fin{background:#6d46c9}
+.shp{background:#c25a16}.xw{background:#b03a6f}.fin{background:#6d46c9}
 .soon{background:transparent;color:var(--mut);border:1.5px dashed var(--br)}
 .soon:last-child{grid-column:1/-1;min-height:96px}
-@media(min-width:720px){.bento{grid-template-columns:repeat(6,1fr)}.cal{grid-column:span 4}.tsk,.soon,.shp,.fin{grid-column:span 2}}
+@media(min-width:720px){.bento{grid-template-columns:repeat(6,1fr)}.cal{grid-column:span 4}.tsk,.soon,.shp,.fin,.xw{grid-column:span 2}}
 .wx{padding:0;overflow:hidden;margin-bottom:6px;border-radius:24px}
 .wxs{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
 .wxs::-webkit-scrollbar{display:none}
@@ -51,7 +51,7 @@
 <a class="tile tsk" href="ukoly.html"><span class="ic">✅</span><h2>Úkoly</h2><p id="ts">Načítám…</p><p class="sub" id="tn"></p></a>
 <a class="tile shp" href="nakup.html"><span class="ic">🛒</span><h2>Nákup</h2><p id="ns">Načítám…</p><p class="sub" id="nn"></p></a>
 <a class="tile fin" href="finance.html"><span class="ic">💰</span><h2>Finance</h2><p id="fs">Načítám…</p><p class="sub" id="fn"></p></a>
-<div class="tile soon"><span class="ic">🏋️</span><h2>Cvičení</h2><p class="sub">Brzy</p></div>
+<a class="tile xw" href="krizovka.html"><span class="ic">🧩</span><h2>Křížovka</h2><p id="xs">Načítám…</p></a>
 <div class="tile soon"><span class="ic">💼</span><h2>Práce</h2><p class="sub">Brzy</p></div>
 </div>
 <div class="ver"><button id="vb" type="button"></button> · <button id="bkb" type="button">Záloha dat</button>
@@ -59,7 +59,8 @@
 <div id="bkp" class="card" hidden><div style="font-size:14px;margin-bottom:10px">Stáhne všechna tvoje data (kalendář, úkoly, nákup a tvoje soukromé finance) do jednoho souboru. Ulož si ho na bezpečné místo, protože obsahuje i finance.</div><button class="add" id="bk" type="button" style="width:100%">Stáhnout zálohu</button><div id="bn" class="empty" style="margin-top:8px"></div></div></div>
 </div>
 <script type="module">
-import{sync,hols,ymd,logout,occ,psync,dump}from"./common.js";
+import{sync,hols,ymd,logout,occ,psync,dump,dn}from"./common.js";
+import{KRIZ}from"./krizovky.js";
 import{nameDay}from"./names.js";
 import{VERSION,CHANGES}from"./version.js";
 const $=i=>document.getElementById(i),now=new Date(),td=ymd(now);
@@ -76,6 +77,10 @@ for(let k=1;k<=30&&n.length<2;k++){const dd=new Date(now.getFullYear(),now.getMo
 $("cs").textContent=t.length?"Dnes: "+t.map(e=>(e.time?e.time+" ":"")+e.title).join(", "):"Dnes nic naplánováno";
 $("cn").textContent=n.length?"Příště: "+n.join(", "):""});
 sync("shop",d=>{const o=d.filter(t=>t.done!==true&&t.title);$("ns").textContent=o.length?o.length+" k nákupu":"Nic není potřeba";$("nn").textContent=o.slice(0,3).map(t=>String(t.title)).join(", ")});
+psync("xw",d=>{const i=dn(td)%KRIZ.length,p=KRIZ[i],x=d.find(q=>q.id==="p"+i);
+if(x&&x.ok){$("xs").textContent="Dnešní vyluštěna ✓";return}
+if(x&&typeof x.g==="string"){const a=[...x.g];let n=0,f=0;p.g.forEach((row,r)=>[...row].forEach((ch,c)=>{if(ch!=="#"&&ch!=="·"){n++;if(a[r*p.w+c]&&a[r*p.w+c]!==".")f++}}));$("xs").textContent="Dnešní rozluštěna z "+Math.round(f/n*100)+" %";return}
+$("xs").textContent="Dnešní křížovka čeká"});
 psync("fin",d=>{$("fs").textContent=d.some(x=>x.id===td)?"Dnes zadáno ✓":"Dnes ještě nezadáno";$("fn").textContent=d.length?d.length+" záznamů":""});
 sync("tasks",d=>{const o=d.filter(t=>t.done!==true),od=o.filter(t=>t.due&&t.due<td).length;
 $("ts").textContent=o.length?o.length+" otevřených":"Vše hotovo";$("tn").textContent=od?od+" po termínu":""});
