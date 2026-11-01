@@ -1,0 +1,36 @@
+name: Nákup upozornění
+on:
+  workflow_dispatch:
+    inputs:
+      add:
+        description: "Přidané položky"
+        required: false
+        default: ""
+      buy:
+        description: "Koupené položky"
+        required: false
+        default: ""
+      uid:
+        description: "Kdo změnu udělal (uid)"
+        required: false
+        default: ""
+      who:
+        description: "Jméno"
+        required: false
+        default: ""
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save firebase-admin@12
+      - run: node shop.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          ADD: ${{ inputs.add }}
+          BUY: ${{ inputs.buy }}
+          ACTOR: ${{ inputs.uid }}
+          WHO: ${{ inputs.who }}
