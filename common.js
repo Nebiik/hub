@@ -25,7 +25,11 @@ export const me=authed.then(u=>u.uid);
 export const GH={owner:"Nebiik",repo:"hub"};
 let ghT=null;
 export async function ghDispatch(wf,inputs){try{await authed;if(!ghT){const s=await getDoc(doc(fs,"spaces","main","meta","ghtoken"));ghT=s.exists()?(s.data().t||""):""}
-if(!ghT)return false;const r=await fetch("https://api.github.com/repos/"+GH.owner+"/"+GH.repo+"/actions/workflows/"+wf+"/dispatches",{method:"POST",keepalive:true,headers:{Authorization:"Bearer "+ghT,Accept:"application/vnd.github+json","Content-Type":"application/json"},body:JSON.stringify({ref:"main",inputs})});return r.status===204}catch(e){return false}}
+if(!ghT)return"Chybí GitHub token (Úvodní stránka, Upozornění, Okamžitá upozornění).";
+const r=await fetch("https://api.github.com/repos/"+GH.owner+"/"+GH.repo+"/actions/workflows/"+wf+"/dispatches",{method:"POST",headers:{Authorization:"Bearer "+ghT,Accept:"application/vnd.github+json","Content-Type":"application/json"},body:JSON.stringify({ref:"main",inputs})});
+if(r.status===204)return"";
+return"GitHub odpověděl "+r.status+([401,403,404].includes(r.status)?" (zkontroluj token a jeho oprávnění Actions: Read and write pro repozitář hub)":"")+"."}
+catch(e){return"Spojení s GitHubem se nepovedlo: "+(e&&e.message?e.message:e)}}
 export async function whoami(){const u=await authed;let who="";try{const s=await getDoc(doc(fs,"users",u.uid,"settings","notif"));if(s.exists())who=s.data().who||""}catch(e){}return{uid:u.uid,who}}
 const tokHash=t=>{let h=5381;for(const c of t)h=(h*33^c.charCodeAt(0))>>>0;return"t"+h.toString(36)+t.length.toString(36)};
 export const pushIsOn=()=>{try{return !!localStorage.getItem("pushTok")&&Notification.permission==="granted"}catch(e){return false}};

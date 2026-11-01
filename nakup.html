@@ -34,13 +34,13 @@
 </section>
 </div></div>
 <script type="module">
-import{sync,put,del,ghDispatch,whoami}from"./common.js";
+import{sync,put,del,ghDispatch,whoami,msg}from"./common.js";
 const $=i=>document.getElementById(i);
 let K=[];
 const mk=(t,c,x)=>{const n=document.createElement(t);n.className=c;if(x!=null)n.textContent=x;return n};
 const Q={add:[],buy:[]};let qt=null;
 const qn=(k,t)=>{Q[k].push(t);clearTimeout(qt);qt=setTimeout(flushQ,15000)};
-async function flushQ(){clearTimeout(qt);qt=null;const a=Q.add.splice(0),b=Q.buy.splice(0);if(!a.length&&!b.length)return;const me=await whoami();await ghDispatch("shop.yml",{add:a.join(", ").slice(0,300),buy:b.join(", ").slice(0,300),uid:me.uid,who:me.who})}
+async function flushQ(){clearTimeout(qt);qt=null;const a=Q.add.splice(0),b=Q.buy.splice(0);if(!a.length&&!b.length)return;const me=await whoami();const err=await ghDispatch("shop.yml",{add:a.join(", ").slice(0,300),buy:b.join(", ").slice(0,300),uid:me.uid,who:me.who});if(err)msg("Upozornění druhému se neodeslalo. "+err)}
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&qt)flushQ()});
 const ts=t=>Number(String(t.id).slice(0,13))||0;
 function row(t){const d=mk("div","tk"+(t.done?" dn":"")),c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.setAttribute("aria-label",t.done?"Vrátit na seznam":"Koupeno");c.onchange=()=>{put("shop",{...t,done:c.checked});if(c.checked)qn("buy",t.title)};
