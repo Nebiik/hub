@@ -2,12 +2,12 @@ import{initializeApp,cert}from"firebase-admin/app";
 import{getFirestore}from"firebase-admin/firestore";
 import{getMessaging}from"firebase-admin/messaging";
 import nodemailer from"nodemailer";
-const E=process.env,MODE=E.MODE==="evening"?"evening":"morning",FORCE=E.FORCE==="true";
+const E=process.env,FORCE=E.FORCE==="true";
 if(!E.FIREBASE_SERVICE_ACCOUNT){console.error("Chybí FIREBASE_SERVICE_ACCOUNT.");process.exit(1)}
 initializeApp({credential:cert(JSON.parse(E.FIREBASE_SERVICE_ACCOUNT))});
 const db=getFirestore(),root=db.collection("spaces").doc("main");
 const pp=Object.fromEntries(new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Prague",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(x=>[x.type,x.value]));
-const today=pp.year+"-"+pp.month+"-"+pp.day,hour=+pp.hour,want=MODE==="evening"?20:7;
+const today=pp.year+"-"+pp.month+"-"+pp.day,hour=+pp.hour,MODE=FORCE?(E.MODE==="evening"?"evening":"morning"):(hour>=7&&hour<12?"morning":hour>=20&&hour<23?"evening":null);
 const dn=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10))/864e5,ad=(s,k)=>new Date((dn(s)+k)*864e5).toISOString().slice(0,10);
 function occ1(e,s){if(s<e.date||(e.until&&s>e.until))return false;const r=e.rep||(e.type==="bday"||e.type==="nday"?"y":"");
 if(!r)return s===e.date;if(r==="d")return true;if(r==="w")return(dn(s)-dn(e.date))%7===0;if(r==="m")return s.slice(8)===e.date.slice(8);return s.slice(5)===e.date.slice(5)}
@@ -28,7 +28,7 @@ const od=tasks.filter(t=>t.due&&t.due<today),dd=tasks.filter(t=>t.due===today||t
 sec("Úkoly",[...od.map(t=>t.title+" (po termínu od "+dm(t.due)+")"),...dd.map(t=>t.title+" (termín "+(t.due===today?"dnes":"zítra")+")"),...(rest>0?["Dalších otevřených: "+rest]:[])]);
 if(shop.length)sec("Nákup ("+shop.length+")",[shop.slice(0,10).map(t=>t.title).join(", ")+(shop.length>10?" …":"")]);
 return{subject:"HUB: "+dl,html:"<div style=\"font-family:system-ui,sans-serif;max-width:520px\"><h2 style=\"margin:0 0 4px\">Dobré ráno</h2>"+H.join("")+"</div>",text:"Dobré ráno\n"+T.join("\n")}}
-if(!FORCE&&hour!==want){console.log("V Praze je "+hour+" h, čekám na "+want+" h, nic neposílám.");process.exit(0)}
+if(!MODE){console.log("V Praze je "+hour+" h, mimo okna odesílání (7 až 12 a 20 až 23 h), nic neposílám.");process.exit(0)}
 const sref=root.collection("meta").doc("notify_"+MODE),sd=await sref.get();
 if(!FORCE&&sd.exists&&sd.data().date===today){console.log("Dnes už odesláno.");process.exit(0)}
 if(MODE==="evening"){
