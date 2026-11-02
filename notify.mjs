@@ -29,6 +29,8 @@ sec("Úkoly",[...od.map(t=>t.title+" (po termínu od "+dm(t.due)+")"),...dd.map(
 if(shop.length)sec("Nákup ("+shop.length+")",[shop.slice(0,10).map(t=>t.title).join(", ")+(shop.length>10?" …":"")]);
 return{subject:"HUB: "+dl,html:"<div style=\"font-family:system-ui,sans-serif;max-width:520px\"><h2 style=\"margin:0 0 4px\">Dobré ráno</h2>"+H.join("")+"</div>",text:"Dobré ráno\n"+T.join("\n")}}
 if(!MODE){console.log("V Praze je "+hour+" h, mimo okna odesílání (7 až 12 a 20 až 23 h), nic neposílám.");process.exit(0)}
+if(!FORCE){const ds=await Promise.all((MODE==="morning"?["m_push","m_mail"]:["e_push"]).map(n=>root.collection("meta").doc("notify_"+n).get()));
+if(ds.every(d=>d.exists&&d.data().date===today)){console.log("Dnes už je vše odesláno.");process.exit(0)}}
 const once=async(name,fn)=>{const ref=root.collection("meta").doc("notify_"+name),d=await ref.get();if(!FORCE&&d.exists&&d.data().date===today){console.log(name+": dnes už odesláno.");return}await fn();await ref.set({date:today})};
 const send=async(r,title,body,url)=>{try{await getMessaging().send({token:r.token,data:{title,body,url}});return true}catch(e){console.warn("Push selhal:",e.code);if(/not-registered|invalid-registration/.test(e.code||""))await r.ref.delete();return false}};
 async function recipients(){const ts=await db.collectionGroup("tokens").get(),c={},out=[];
