@@ -1,7 +1,8 @@
 name: Upozornění
 on:
   schedule:
-    - cron: "7 5,6,7,8,9,18,19,20,21 * * *"
+    - cron: "7,22,37,52 5-10 * * *"
+    - cron: "7,22,37,52 18-21 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -10,6 +11,7 @@ on:
         options:
           - morning
           - evening
+          - auto
         default: morning
 jobs:
   notify:
@@ -26,5 +28,5 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
-          FORCE: ${{ github.event_name == 'workflow_dispatch' }}
+          FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode != 'auto' }}
           MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'auto' }}
