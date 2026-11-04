@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Seriály</title><link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#3a4fd7">
+<style>
+.stack{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}.stack>*{min-width:0}
+.hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}.hd h2{font-size:18px;margin:0}
+.gh{font:700 14px var(--f);color:var(--mut);margin:14px 0 2px;text-transform:uppercase;letter-spacing:.04em}.gh:first-child{margin-top:0}.gh.td{color:var(--ac)}
+.sr{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--br)}
+.gh+.sr{border-top:0}
+.sr .m{flex:1;min-width:0}.sr .t{font-size:16px;font-weight:600;overflow-wrap:anywhere}.sr .n{font-size:12px;color:var(--mut)}
+.pl{font-size:11px;font-weight:700;color:#fff;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.ab{border:1px solid var(--br);background:transparent;border-radius:10px;padding:5px 10px;font-size:13px;cursor:pointer;color:var(--tx);white-space:nowrap}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+details summary{cursor:pointer;font:700 15px var(--f)}details[open] summary{margin-bottom:8px}
+</style></head>
+<body><div class="wrap" style="max-width:640px">
+<header><a href="index.html">‹ HUB</a><h1>Seriály</h1></header><div id="msg"></div>
+<div class="stack">
+<section class="card"><div id="list"></div></section>
+<section class="card"><div class="hd"><h2 id="ft">Přidat seriál</h2></div>
+<form id="f" style="margin:0"><input id="title" placeholder="Název seriálu" required maxlength="80">
+<div class="g2"><select id="plat"></select><select id="day"></select></div>
+<div class="g2"><select id="st"><option value="w">Sledujeme</option><option value="p">Čekáme na další řadu</option><option value="d">Hotovo</option></select><input id="note" placeholder="Poznámka (nepovinné)" maxlength="60"></div>
+<button class="add" type="submit" id="sb">Přidat</button><button class="nb" type="button" id="cancel" hidden>Zrušit úpravu</button></form></section>
+<details class="card"><summary id="dsum">Hotovo</summary><div id="done"></div></details>
+</div></div>
+<script type="module">
+import{sync,put,del}from"./common.js";
+const $=i=>document.getElementById(i);
+const PL=[["Netflix","#c1121f"],["Oneplay","#6b3fa0"],["Max","#5b3bf5"],["Disney+","#113ccf"],["Prima+","#c8102e"],["Voyo","#d9480f"],["SkyShowtime","#2563eb"],["Apple TV+","#4b5563"],["Prime Video","#0e7490"],["Televize","#2a9d6f"],["Jiné","#6b7280"]];
+const DAYS=["Neděle","Pondělí","Úterý","Středa","Čtvrtek","Pátek","Sobota"],DV=["1","2","3","4","5","6","0","x","?"];
+const col=n=>(PL.find(p=>p[0]===n)||PL[10])[1];
+let S=[],editId=null;
+$("plat").innerHTML=PL.map(p=>'<option value="'+p[0]+'">'+p[0]+"</option>").join("");
+$("day").innerHTML=["1","2","3","4","5","6","0"].map(d=>'<option value="'+d+'">Každý týden: '+DAYS[+d]+"</option>").join("")+'<option value="x">Celá řada najednou</option><option value="?">Nepravidelně / nevíme</option>';
+const mk=(t,c,x)=>{const n=document.createElement(t);n.className=c;if(x!=null)n.textContent=x;return n};
+const dl=s=>(+s.day-new Date().getDay()+7)%7;
+function row(s,done){const r=mk("div","sr"),m=mk("div","m");m.append(mk("div","t",s.title));
+const info=[s.ep?"díl "+s.ep:"",s.note].filter(Boolean).join(" · ");if(info)m.append(mk("div","n",info));
+const b=mk("span","pl",s.plat);b.style.background=col(s.plat);r.append(b,m);
+const btn=(t,ti,fn)=>{const x=mk("button","ab",t);x.title=ti;x.onclick=fn;r.append(x)};
+if(!done){btn("+1","Zhlédnutý další díl",()=>put("series",{...s,ep:(s.ep||0)+1}));btn("✓","Hotovo",()=>put("series",{...s,st:"d"}))}
+else btn("↩","Vrátit mezi sledované",()=>put("series",{...s,st:"w"}));
+btn("✎","Upravit",()=>start(s));
+if(done){const x=mk("button","x","×");x.title="Smazat";x.onclick=()=>{if(confirm("Smazat „"+s.title+"“?"))del("series",s.id)};r.append(x)}
+return r}
+function render(){const t=new Date().getDay(),l=$("list");l.innerHTML="";
+const act=S.filter(s=>s.st!=="d"),G=new Map();
+const key=s=>s.st==="p"?9:s.day==="x"?7:s.day==="?"?8:dl(s);
+act.forEach(s=>{const k=key(s);if(!G.has(k))G.set(k,[]);G.get(k).push(s)});
+if(!act.length)l.innerHTML='<div class="empty">Zatím žádné seriály. Přidej první dole.</div>';
+[...G.keys()].sort((a,b)=>a-b).forEach(k=>{const lab=k===0?"Dnes":k===1?"Zítra":k<7?DAYS[(t+k)%7]:k===7?"Celá řada najednou":k===8?"Nepravidelně":"Čekáme na další řadu";
+l.append(mk("div","gh"+(k===0?" td":""),lab));G.get(k).sort((a,b)=>a.title.localeCompare(b.title,"cs")).forEach(s=>l.append(row(s,false)))});
+const d=S.filter(s=>s.st==="d").sort((a,b)=>a.title.localeCompare(b.title,"cs")),dd=$("done");dd.innerHTML="";
+$("dsum").textContent="Hotovo ("+d.length+")";if(!d.length)dd.innerHTML='<div class="empty">Zatím nic.</div>';d.forEach(s=>dd.append(row(s,true)))}
+function start(s){editId=s.id;$("title").value=s.title;$("plat").value=s.plat;$("day").value=s.day;$("st").value=s.st;$("note").value=s.note||"";$("sb").textContent="Uložit změny";$("ft").textContent="Upravit seriál";$("cancel").hidden=false;$("title").focus();scrollTo({top:document.body.scrollHeight,behavior:"smooth"})}
+function stop(){editId=null;$("f").reset();$("sb").textContent="Přidat";$("ft").textContent="Přidat seriál";$("cancel").hidden=true}
+$("cancel").onclick=stop;
+$("f").onsubmit=e=>{e.preventDefault();const t=$("title").value.trim();if(!t)return;const old=S.find(x=>x.id===editId);
+put("series",{id:editId||Date.now()+""+Math.floor(100+Math.random()*900),title:t,plat:$("plat").value,day:$("day").value,st:$("st").value,note:$("note").value.trim(),ep:old?old.ep:0});stop()};
+render();
+sync("series",d=>{S=d.map(x=>({id:x.id,title:String(x.title||""),plat:PL.some(p=>p[0]===x.plat)?x.plat:"Jiné",day:DV.includes(String(x.day))?String(x.day):"?",st:["w","p","d"].includes(x.st)?x.st:"w",note:String(x.note||""),ep:Number(x.ep)||0})).filter(x=>x.title);render()});
+</script></body></html>

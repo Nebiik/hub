@@ -16,12 +16,13 @@ const wc=c=>c===0?["☀️","Jasno"]:c===1?["🌤️","Převážně jasno"]:c===
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const dm=s=>new Date(s+"T12:00:00").toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"});
 const lineE=e=>(e.time?e.time+" ":"")+e.title+(e.end&&e.end>e.date?" (do "+dm(e.end)+")":"");
-function build(evs,tasks,shop,wx){
+function build(evs,tasks,shop,wx,ser){
 const on=s=>evs.filter(e=>occ(e,s)).sort((a,b)=>(a.time||"")<(b.time||"")?-1:1);
 const tm=ad(today,1),H=[],T=[];
 const sec=(t,items)=>{H.push("<h3 style=\"margin:18px 0 6px;font-size:15px\">"+esc(t)+"</h3>"+(items.length?"<ul style=\"margin:0;padding-left:20px\">"+items.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>":"<div style=\"color:#777\">Nic.</div>"));T.push("\n"+t+"\n"+(items.length?items.map(x=>"- "+x).join("\n"):"Nic."))};
 const dl=new Date(today+"T12:00:00").toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"numeric"});
 if(wx)sec("Počasí v Brně",[wx]);
+if(ser&&ser.length)sec("Dnes vychází",ser.map(x=>x.title+(x.plat?" ("+x.plat+")":"")));
 sec("Dnes ("+dl+")",on(today).map(lineE));
 sec("Zítra",on(tm).map(lineE));
 const od=tasks.filter(t=>t.due&&t.due<today),dd=tasks.filter(t=>t.due===today||t.due===tm),rest=tasks.length-od.length-dd.length;
@@ -48,7 +49,7 @@ await once("m_mail",async()=>{
 if(!E.GMAIL_USER||!E.GMAIL_APP_PASSWORD||!E.MAIL_TO){console.warn("Chybí GMAIL_USER, GMAIL_APP_PASSWORD nebo MAIL_TO, e-mail přeskakuji.");return}
 const tasks=(await get("tasks")).filter(t=>t.done!==true&&t.title),shop=(await get("shop")).filter(t=>t.done!==true&&t.title);
 let wx="";try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=49.1951&longitude=16.6068&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FPrague&forecast_days=1"),d=(await r.json()).daily,[ic,tx]=wc(d.weather_code[0]);wx=ic+" "+tx+", "+Math.round(d.temperature_2m_min[0])+"° až "+Math.round(d.temperature_2m_max[0])+"°, srážky "+(d.precipitation_probability_max[0]??"–")+" %"}catch(e){console.warn("Počasí se nenačetlo.")}
-const m=build(evs,tasks,shop,wx);
+const ser=(await get("series")).filter(x=>x.st==="w"&&x.title&&String(x.day)===String(new Date(today+"T12:00:00").getDay())),m=build(evs,tasks,shop,wx,ser);
 await nodemailer.createTransport({service:"gmail",auth:{user:E.GMAIL_USER,pass:E.GMAIL_APP_PASSWORD}}).sendMail({from:'"HUB" <'+E.GMAIL_USER+">",to:E.MAIL_TO,subject:m.subject,html:m.html,text:m.text});console.log("E-mail odeslán.")})}
 else{
 await once("e_push",async()=>{let n=0;

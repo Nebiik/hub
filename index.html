@@ -15,7 +15,7 @@
 .ic{font-size:36px;line-height:1}
 .tile:active{transform:scale(.98)}
 .cal{grid-column:1/-1;background:#3a4fd7;min-height:200px}.tsk{background:#0c8a7a}
-.shp{background:#c25a16}.xw{background:#b03a6f}.fin{background:#6d46c9}
+.shp{background:#c25a16}.xw{background:#b03a6f}.ser{background:#1f6f8b;grid-column:1/-1;min-height:120px}.fin{background:#6d46c9}
 .soon{background:transparent;color:var(--mut);border:1.5px dashed var(--br)}
 .soon:last-child{grid-column:1/-1;min-height:96px}
 @media(min-width:720px){.bento{grid-template-columns:repeat(6,1fr)}.cal{grid-column:span 4}.tsk,.soon,.shp,.fin,.xw{grid-column:span 2}}
@@ -55,7 +55,7 @@
 <a class="tile shp" href="nakup.html"><span class="ic">🛒</span><h2>Nákup</h2><p id="ns">Načítám…</p><p class="sub" id="nn"></p></a>
 <a class="tile fin" href="finance.html"><span class="ic">💰</span><h2>Finance</h2><p id="fs">Načítám…</p><p class="sub" id="fn"></p></a>
 <a class="tile xw" href="krizovka.html"><span class="ic">🧩</span><h2>Křížovka</h2><p id="xs">Načítám…</p></a>
-<div class="tile soon"><span class="ic">💼</span><h2>Práce</h2><p class="sub">Brzy</p></div>
+<a class="tile ser" href="serialy.html"><span class="ic">📺</span><h2>Seriály</h2><p id="ss">Načítám…</p><p class="sub" id="sn"></p></a>
 </div>
 <div class="ver"><button id="vb" type="button"></button> · <button id="bkb" type="button">Záloha dat</button> · <button id="ntb" type="button">Upozornění</button>
 <div id="vl" class="card" hidden></div>
@@ -93,6 +93,9 @@ if(x&&x.ok){$("xs").textContent="Dnešní vyluštěna ✓";return}
 if(x&&typeof x.g==="string"){const a=[...x.g];let n=0,f=0;p.g.forEach((row,r)=>[...row].forEach((ch,c)=>{if(ch!=="#"&&ch!=="·"){n++;if(a[r*p.w+c]&&a[r*p.w+c]!==".")f++}}));$("xs").textContent="Dnešní rozluštěna z "+Math.round(f/n*100)+" %";return}
 $("xs").textContent="Dnešní křížovka čeká"});
 psync("fin",d=>{$("fs").textContent=d.some(x=>x.id===td)?"Dnes zadáno ✓":"Dnes ještě nezadáno";$("fn").textContent=d.length?d.length+" záznamů":""});
+sync("series",d=>{const t=new Date().getDay(),w=d.filter(x=>x.st==="w"&&/^[0-6]$/.test(String(x.day))&&x.title),dl=x=>(+x.day-t+7)%7;
+const tdy=w.filter(x=>dl(x)===0).map(x=>String(x.title));$("ss").textContent=tdy.length?"Dnes: "+tdy.join(", "):"Dnes nic nevychází";
+const nx=w.filter(x=>dl(x)>0).sort((a,b)=>dl(a)-dl(b)).slice(0,2).map(x=>String(x.title)+" ("+["Ne","Po","Út","St","Čt","Pá","So"][+x.day]+")");$("sn").textContent=nx.length?"Příště: "+nx.join(", "):""});
 sync("tasks",d=>{const o=d.filter(t=>t.done!==true),od=o.filter(t=>t.due&&t.due<td).length;
 $("ts").textContent=o.length?o.length+" otevřených":"Vše hotovo";$("tn").textContent=od?od+" po termínu":""});
 

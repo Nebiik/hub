@@ -1,5 +1,7 @@
 // Nejnovější změna je nahoře. Číslo verze se počítá samo podle počtu záznamů.
 export const CHANGES=[
+"Ranní e-mail ukazuje seriály, které dnes vycházejí",
+"Seriály: přehled, co kde sledujete a kdy vychází (nahradily dlaždici Práce)",
 "Spolehlivější časovač upozornění: častější pokusy a úspornější kontrola",
 "Výraznější animace: plynulý přechod mezi stránkami, nájezd karet, plovoucí ikony a pozdrav",
 "Oprava upozornění z nákupu a zobrazení důvodu, když se neodešlou",

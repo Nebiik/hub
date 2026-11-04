@@ -20,7 +20,7 @@ g("lf").onsubmit=e=>{e.preventDefault();signInWithEmailAndPassword(auth,g("le").
 const authed=new Promise(res=>onAuthStateChanged(auth,u=>{if(u){ov.remove();res(u)}else{if(!ov.isConnected)document.body.append(ov);g("lf").style.visibility="visible"}}));
 export const logout=()=>signOut(auth);
 export async function dump(){const u=await authed,g=async(...p)=>(await getDocs(collection(fs,...p))).docs.map(d=>({id:d.id,...d.data()}));
-return{app:"HUB",vytvoreno:new Date().toISOString(),sdilene:{events:await g("spaces","main","events"),tasks:await g("spaces","main","tasks"),shop:await g("spaces","main","shop")},soukrome:{fin:await g("users",u.uid,"fin"),findep:await g("users",u.uid,"findep")}}}
+return{app:"HUB",vytvoreno:new Date().toISOString(),sdilene:{events:await g("spaces","main","events"),tasks:await g("spaces","main","tasks"),shop:await g("spaces","main","shop"),series:await g("spaces","main","series")},soukrome:{fin:await g("users",u.uid,"fin"),findep:await g("users",u.uid,"findep")}}}
 export const me=authed.then(u=>u.uid);
 export const GH={owner:"Nebiik",repo:"hub"};
 let ghT=null;
