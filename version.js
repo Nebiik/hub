@@ -1,5 +1,6 @@
 // Nejnovější změna je nahoře. Číslo verze se počítá samo podle počtu záznamů.
 export const CHANGES=[
+"Pozdrav oslovuje v 5. pádu: Tomáši, Sabino",
 "Ranní e-mail ukazuje seriály, které dnes vycházejí",
 "Seriály: přehled, co kde sledujete a kdy vychází (nahradily dlaždici Práce)",
 "Spolehlivější časovač upozornění: častější pokusy a úspornější kontrola",
