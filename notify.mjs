@@ -2,12 +2,13 @@ import{initializeApp,cert}from"firebase-admin/app";
 import{getFirestore}from"firebase-admin/firestore";
 import{getMessaging}from"firebase-admin/messaging";
 import nodemailer from"nodemailer";
+import{nameDay}from"./names.js";
 const E=process.env,FORCE=E.FORCE==="true";
 if(!E.FIREBASE_SERVICE_ACCOUNT){console.error("Chybí FIREBASE_SERVICE_ACCOUNT.");process.exit(1)}
 initializeApp({credential:cert(JSON.parse(E.FIREBASE_SERVICE_ACCOUNT))});
 const db=getFirestore(),root=db.collection("spaces").doc("main");
-const pp=Object.fromEntries(new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Prague",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(x=>[x.type,x.value]));
-const today=pp.year+"-"+pp.month+"-"+pp.day,hour=+pp.hour,MODE=FORCE?(E.MODE==="evening"?"evening":"morning"):(hour>=7&&hour<12?"morning":hour>=20&&hour<23?"evening":null);
+const pp=Object.fromEntries(new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Prague",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(x=>[x.type,x.value]));
+const today=pp.year+"-"+pp.month+"-"+pp.day,hour=+pp.hour,min=+pp.minute,ND=(E.MODE||"").startsWith("nameday"),MODE=ND?(FORCE||(hour===9&&min>=30)||hour===10||hour===11?"nameday":null):FORCE?(E.MODE==="evening"?"evening":"morning"):(hour>=7&&hour<12?"morning":hour>=20&&hour<23?"evening":null);
 const dn=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10))/864e5,ad=(s,k)=>new Date((dn(s)+k)*864e5).toISOString().slice(0,10);
 function occ1(e,s){if(s<e.date||(e.until&&s>e.until))return false;const r=e.rep||(e.type==="bday"||e.type==="nday"?"y":"");
 if(!r)return s===e.date;if(r==="d")return true;if(r==="w")return(dn(s)-dn(e.date))%7===0;if(r==="m")return s.slice(8)===e.date.slice(8);return s.slice(5)===e.date.slice(5)}
@@ -29,8 +30,8 @@ const od=tasks.filter(t=>t.due&&t.due<today),dd=tasks.filter(t=>t.due===today||t
 sec("Úkoly",[...od.map(t=>t.title+" (po termínu od "+dm(t.due)+")"),...dd.map(t=>t.title+" (termín "+(t.due===today?"dnes":"zítra")+")"),...(rest>0?["Dalších otevřených: "+rest]:[])]);
 if(shop.length)sec("Nákup ("+shop.length+")",[shop.slice(0,10).map(t=>t.title).join(", ")+(shop.length>10?" …":"")]);
 return{subject:"HUB: "+dl,html:"<div style=\"font-family:system-ui,sans-serif;max-width:520px\"><h2 style=\"margin:0 0 4px\">Dobré ráno</h2>"+H.join("")+"</div>",text:"Dobré ráno\n"+T.join("\n")}}
-if(!MODE){console.log("V Praze je "+hour+" h, mimo okna odesílání (7 až 12 a 20 až 23 h), nic neposílám.");process.exit(0)}
-if(!FORCE){const ds=await Promise.all((MODE==="morning"?["m_push","m_mail"]:["e_push"]).map(n=>root.collection("meta").doc("notify_"+n).get()));
+if(!MODE){console.log("V Praze je "+hour+" h, mimo okna odesílání (7 až 12, 9:30 až 12 pro svátek a 20 až 23 h), nic neposílám.");process.exit(0)}
+if(!FORCE){const ds=await Promise.all((MODE==="morning"?["m_push","m_mail"]:MODE==="nameday"?["n_push"]:["e_push"]).map(n=>root.collection("meta").doc("notify_"+n).get()));
 if(ds.every(d=>d.exists&&d.data().date===today)){console.log("Dnes už je vše odesláno.");process.exit(0)}}
 const once=async(name,fn)=>{const ref=root.collection("meta").doc("notify_"+name),d=await ref.get();if(!FORCE&&d.exists&&d.data().date===today){console.log(name+": dnes už odesláno.");return}await fn();await ref.set({date:today})};
 const send=async(r,title,body,url)=>{try{await getMessaging().send({token:r.token,data:{title,body,url}});return true}catch(e){console.warn("Push selhal:",e.code);if(/not-registered|invalid-registration/.test(e.code||""))await r.ref.delete();return false}};
@@ -43,7 +44,13 @@ const evs=(await get("events")).filter(e=>/^\d{4}-\d\d-\d\d$/.test(e.date)&&e.ti
 async function evPush(day,rem,label){let n=0;const list=evs.filter(e=>e.rem===rem&&occ(e,day));
 for(const r of rec){if(r.st.cal===false)continue;const l=list.filter(e=>!e.by||!r.st.who||r.st.who===e.by);if(!l.length)continue;
 if(await send(r,"Kalendář",label+l.slice(0,5).map(lineE).join(", ")+(l.length>5?" …":""),"kalendar.html"))n++}return n}
-if(MODE==="morning"){
+if(MODE==="nameday"){
+await once("n_push",async()=>{const nm=nameDay(+today.slice(5,7),+today.slice(8,10));
+if(!nm){console.log("Dnes není žádné jméno ve svátcích.");return}
+const body="Dnes "+(/,| a /.test(nm)?"mají":"má")+" svátek "+nm.replace(/,\s*/g," a ")+". Neznáš někoho takového? Nezapomeň popřát!";let n=0;
+for(const r of rec){if(r.st.nday===false)continue;if(await send(r,"Svátek",body,"index.html"))n++}
+console.log("Pushek (svátek): "+n+" – "+body)})}
+else if(MODE==="morning"){
 await once("m_push",async()=>{console.log("Pushek (kalendář): "+await evPush(today,"d0","Dnes: "))});
 await once("m_mail",async()=>{
 if(!E.GMAIL_USER||!E.GMAIL_APP_PASSWORD||!E.MAIL_TO){console.warn("Chybí GMAIL_USER, GMAIL_APP_PASSWORD nebo MAIL_TO, e-mail přeskakuji.");return}

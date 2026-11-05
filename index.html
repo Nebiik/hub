@@ -66,6 +66,7 @@
 <label class="nl"><input type="checkbox" id="nshop"> Nákup: změny od druhého</label>
 <label class="nl"><input type="checkbox" id="ncal"> Kalendář: připomínky událostí</label>
 <label class="nl"><input type="checkbox" id="nfin"> Finance: večerní připomínka</label>
+<label class="nl"><input type="checkbox" id="nnd"> Svátek: ranní připomínka (9:30)</label>
 <details class="nd"><summary>Okamžitá upozornění (nastavení pro nákup)</summary><div class="hint2">Aby upozornění na nákup chodila hned, je potřeba jednou vložit přístupový token z GitHubu (jen oprávnění Actions: Read and write pro repozitář hub).</div><input id="ngh" type="password" placeholder="GitHub token" autocomplete="off"><button class="add" id="ngs" type="button" style="width:100%;margin-top:8px">Uložit token</button><div id="ngm" class="empty"></div></details>
 <div id="nmsg" class="empty" style="margin-top:8px"></div></div></div>
 </div>
@@ -120,15 +121,15 @@ $("vb").textContent="HUB v"+VERSION+" · Co je nového";
 $("vb").onclick=()=>{$("vl").hidden=!$("vl").hidden;$("bkp").hidden=true;$("ntp").hidden=true};
 $("bkb").onclick=()=>{$("bkp").hidden=!$("bkp").hidden;$("vl").hidden=true;$("ntp").hidden=true};
 $("ntb").onclick=()=>{$("ntp").hidden=!$("ntp").hidden;$("vl").hidden=true;$("bkp").hidden=true};
-let st={who:"",shop:true,cal:true,fin:true};
+let st={who:"",shop:true,cal:true,fin:true,nday:true};
 const gh=now.getHours(),greet=()=>{$("gt").textContent=(gh<5?"Dobrou noc":gh<10?"Dobré ráno":gh<18?"Dobrý den":"Dobrý večer")+(st.who?", "+({Tom:"Tomáši",Sabina:"Sabino"}[st.who]||st.who):"")};
-const showSt=()=>{$("nwho").value=st.who||"";$("nshop").checked=st.shop!==false;$("ncal").checked=st.cal!==false;$("nfin").checked=st.fin!==false};
+const showSt=()=>{$("nwho").value=st.who||"";$("nshop").checked=st.shop!==false;$("ncal").checked=st.cal!==false;$("nfin").checked=st.fin!==false;$("nnd").checked=st.nday!==false};
 const pst=()=>{$("nb1").textContent=pushIsOn()?"Vypnout na tomto zařízení":"Zapnout upozornění";return pushIsOn()};
 $("nb1").onclick=async()=>{try{if(pst())await pushOff();else await pushOn();$("nmsg").textContent=""}catch(e){$("nmsg").textContent=e.message||"Nepodařilo se."}pst()};
-const saveSt=()=>{st={who:$("nwho").value,shop:$("nshop").checked,cal:$("ncal").checked,fin:$("nfin").checked};pput("settings",{id:"notif",...st});greet()};
-["nwho","nshop","ncal","nfin"].forEach(i=>$(i).onchange=saveSt);
+const saveSt=()=>{st={who:$("nwho").value,shop:$("nshop").checked,cal:$("ncal").checked,fin:$("nfin").checked,nday:$("nnd").checked};pput("settings",{id:"notif",...st});greet()};
+["nwho","nshop","ncal","nfin","nnd"].forEach(i=>$(i).onchange=saveSt);
 $("ngs").onclick=async()=>{const t=$("ngh").value.trim();if(!t){$("ngm").textContent="Vlož token.";return}await put("meta",{id:"ghtoken",t});$("ngh").value="";$("ngm").textContent="Token uložen."};
-psync("settings",d=>{const x=d.find(q=>q.id==="notif");if(x)st={who:x.who||"",shop:x.shop!==false,cal:x.cal!==false,fin:x.fin!==false};showSt();greet()});
+psync("settings",d=>{const x=d.find(q=>q.id==="notif");if(x)st={who:x.who||"",shop:x.shop!==false,cal:x.cal!==false,fin:x.fin!==false,nday:x.nday!==false};showSt();greet()});
 pst();showSt();greet();
 $("bk").onclick=async()=>{const bn=$("bn");bn.textContent="Připravuji…";try{const d=await dump();d.verze=VERSION;const name="hub-zaloha-"+ymd(new Date())+".json",f=new File([JSON.stringify(d,null,1)],name,{type:"application/json"});
 const c=d.sdilene,k=d.soukrome;bn.textContent="Záloha připravena: událostí "+c.events.length+", úkolů "+c.tasks.length+", nákup "+c.shop.length+", záznamů financí "+k.fin.length+".";

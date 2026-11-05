@@ -1,5 +1,6 @@
 // Nejnovější změna je nahoře. Číslo verze se počítá samo podle počtu záznamů.
 export const CHANGES=[
+"Svátek: ranní pushka v 9:30 „Dnes má svátek … Nezapomeň popřát!“ (jde vypnout v nastavení upozornění)",
 "Pozdrav oslovuje v 5. pádu: Tomáši, Sabino",
 "Ranní e-mail ukazuje seriály, které dnes vycházejí",
 "Seriály: přehled, co kde sledujete a kdy vychází (nahradily dlaždici Práce)",
